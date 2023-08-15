@@ -49,6 +49,10 @@
 		margin-left: 10rem;
 		margin-top: 3rem;
 	}
+	.small-text {
+		font-size: 10pt;
+		font-family: "Open Sans", sans-serif;
+	}
 	
 	.image-container {
 		flex: 1;
@@ -104,6 +108,20 @@
 
 	.blog ul {
 		margin-left: 1em;
+	}
+
+
+
+	.container-twitter {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 70vh; /* Adjust this value as needed */
+	}
+
+	.twitter-timeline {
+		max-height: 500px; /* Adjust the max height as needed */
+		overflow: hidden;
 	}
 
 	.blog {

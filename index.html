@@ -77,9 +77,23 @@
 
 		<div class="container 75%">
 			<h3 style="text-align: center">News</h3>
-           
-			<p>Note: Coming soon... Follow me on <a href="https://twitter.com/JafarBakhshali1">Twitter</a> </p>
-			<ul>
+
+				<!DOCTYPE html>
+				<html>
+					<head>
+						<title>My Twitter Feed</title>
+						<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+					</head>
+					<body>
+						<div class="container-twitter">
+							<a class="twitter-timeline" data-width="500" data-height="600" data-tweet-limit= "2" data-theme="light" href="https://twitter.com/JafarBakhshali1">Tweets by JafarBakhshali1</a>
+						</div>
+					</body>
+				</div>		
+				</html>
+				
+
+					
             <!--
 				<li>04/2022: I led the organization of the <a href="https://objects-structure-causality.github.io/" target="_blank">ICLR 2022 Workshop on the Elements of Reasoning: Objects, Structure, and Causality (OSC)</a>.</li>
 				<li>12/2021: I received the <a href="https://ellis.eu/news/ellis-phd-award-2021" target="_blank">ELLIS PhD Award 2021</a>.</li>
@@ -112,48 +126,127 @@
 	<section id="two" class="wrapper style2">
 		<div class="container 75%">
 			<h2 style="text-align: center">Selected Projects</h2>
-            <!--
+
 			<hr />
 			<div class="row 200%">
 				<div class="3u 4u(large) 12u$(medium)">
-					<div class="image rounded"><img src="images/slot_attention.png" width="180" alt="" style="border:none;" /></div>
+						<div class="image rounded"><img src="images/machinelearning" width="180" alt="" style="border:none;" /></div>
 				</div>
 				<div class="9u$ 8u$(large) 12u$(medium)">
 					<header>
-						<h4>Object-centric Learning with Slot Attention</h4>
-						<p>Iterative, competitive attention for object discovery</p>
+						<h4>Machine Learning Algorithms from Scratch</h4>
+						<p>Stiftung Universität Hildesheim, Germany | <span style="font-weight: bold; color: #DC143C">Spotlight</span> [<a href= https://github.com/jafarbakhshaliyev/ML-from-Scratch>GitHub</a>]</p>
 					</header>
-					<p>F. Locatello*, D. Weissenborn, T. Unterthiner, A. Mahendran, G. Heigold, J. Uszkoreit, A. Dosovitskiy, <span style="text-decoration: underline;">T. Kipf*</span>, <span style="font-weight: bold">Object-centric Learning with Slot Attention</span>, (NeurIPS 2020), <span style="font-weight: bold; color: #DC143C">Spotlight</span> [<a href='https://arxiv.org/abs/2006.15055'>Link</a>, <a href="https://arxiv.org/pdf/2006.15055.pdf">PDF (arXiv)</a>], *equal contribution.</p>
+						
+						<p class="small-text"> 
+							<ul>
+							<li>
+								Developed and formulated SLE algos (Gaussian elimination, QR), optimization algos (GD, Newton, SGD, CD), step-length algos (backtracking, bold-driver, RMSProp), forward/backward search with AIC/BIC, grid/randomized search with K-Fold,regularization (L1, L2, Elastic Net, Dropout), losses/fit (MSE, crossentropy, case weights, MCR, Information gain)
+							</li>
+							<li>
+								Developed and designed Linear/logistic regression, LDA/QDA, KNN (vanilla, LSH), decision trees (with gradient boosted), MLP, SVM, Naïve Bayes, K-Means, Gaussian Mixtures, NLP (TF-IDF, BOW, CBOW model, N-Gram language model). 
+							</li>
+							
+						</ul>
+						</p>
+		
+					
+				</div>
+			</div>
+		
+			<hr />
+			<div class="row 200%">
+				<div class="3u 4u(large) 12u$(medium)">
+						<div class="image"><img src="images/maxdecisions.png" width="180" alt="" style="border:none;" /></div>
+				</div>
+				<div class="9u$ 8u$(large) 12u$(medium)">
+					<header>
+						<h4>Credit Risk Modelling</h4>
+						<p>MaxDecisions Inc., USA | <span style="font-weight: bold; color: #DC143C">Spotlight</span> [<a href= https://www.linkedin.com/in/jafarbakhshaliyev/overlay/experience/1968090873/multiple-media-viewer/?profileId=ACoAACHNasMBx5j8WcPpSulTfdUsLVip2OVOMjg&treasuryMediaId=1635491080099>Presentation</a>, <a href=https://github.com/jafarbakhshaliyev/Credit-Risk-Modeling/tree/main>GitHub</a>]</p>
+					</header>
+						
+						<p class="small-text"> 
+							<ul>
+							<li>
+								Prepared the dataset for machine learning models by overviewing Weight of Evidence (WoE), scaling noncategorical variables, and oversampling the data to address class imbalance. 
+
+							</li>
+							<li>
+								Implemented ML algorithms including SVM, XGBoost, and DL to predict Probability of Default for clients. 
+							</li>
+							<li>
+								Compared the performance of the models using metrics such as K-S scores, ROC curves, and confusion
+									matrices on the test and validation datasets, and produced rank order tables to evaluate the models’ effectiveness.
+							</li>
+							<li>
+								Collaborated effectively with other team members and stakeholders, including data scientists, engineers, and business leaders, to deliver high-quality risk management solutions to clients.
+							</li>
+							<li>
+								Tech stack: Python, Scikit-Learn, TensorFlow, Keras 
+							</li>
+						</ul>
+						</p>
+		
+					
 				</div>
 			</div>
 			<hr />
 			<div class="row 200%">
 				<div class="3u 4u(large) 12u$(medium)">
-					<div class="image rounded"><img src="images/thesis.png" width="180" alt="" style="border:none;" /></div>
+					<div class="image"><img src="images/amex_image.jpeg" width="180" alt="" style="border:none;" /></div>
 				</div>
 				<div class="9u$ 8u$(large) 12u$(medium)">
 					<header>
-						<h4>Deep Learning with Graph-Structured Representations</h4>
-						<p>PhD thesis (2020), University of Amsterdam</p>
+						<h4>Credit Default Prediction</h4>
+						<p>American Express, USA | <span style="font-weight: bold; color: #DC143C">Spotlight</span> [<a href= https://github.com/jafarbakhshaliyev/Amex-Default-Prediction>GitHub</a>, <a href=https://www.kaggle.com/competitions/amex-default-prediction/overview>Kaggle</a>]</p>
 					</header>
-					<p><span style="text-decoration: underline;">T. N. Kipf</span>, <span style="font-weight: bold">Deep Learning with Graph-Structured Representations</span> [<a href="https://hdl.handle.net/11245.1/1b63b965-24c4-4bcd-aabb-b849056fa76d">Link</a>]</p>
+					<p class="small-text"> 
+						<ul>
+							<li>
+							Conducted extensive data analysis on a dataset of 5M+ rows, leveraging time-series data and advanced feature engineering techniques to create over 800 features, resulting in a significant improvement in model performance.
+							</li>
+							<li>
+							Utilized a diverse ensemble of machine learning models, including LGBM-DART, Logistic Regression, Support Vector Machines (SVM), Neural Networks (NN), and Bagging, to build a robust prediction model. This culminated in achieving an impressive custom metric score of 0.803.
+							</li>
+							<li>
+							Tech stack: Python, Scikit-Learn, Optuna, TensorFlow, Keras.
+							</li>
+						</ul>	
+					</p>			
 				</div>
 			</div>
 			<hr />
+			
 			<div class="row 200%">
 				<div class="3u 4u(large) 12u$(medium)">
-						<div class="image rounded"><img src="images/cswm.png" width="180" alt="" style="border:none;" /></div>
+					<div class="image rounded"><img src="images/arcelik.jpeg" width="180" alt="" style="border:none;" /></div>
 				</div>
 				<div class="9u$ 8u$(large) 12u$(medium)">
 					<header>
-						<h4>Contrastive Learning of Structured World Models</h4>
-						<p>Unsupervised discovery of objects, relations, and consequences of actions.</p>
+						<h4>Dishwasher Plant Material Warehouse Improvement Study</h4>
+						<p> Arcelik Inc., Turkey |  <span style="font-weight: bold; color: #DC143C">Spotlight</span> [<a href= https://www.linkedin.com/in/jafarbakhshaliyev/overlay/education/436842396/multiple-media-viewer/?profileId=ACoAACHNasMBx5j8WcPpSulTfdUsLVip2OVOMjg&treasuryMediaId=1635466693137>Presentation</a>, <a href=https://www.linkedin.com/in/jafarbakhshaliyev/overlay/education/436842396/multiple-media-viewer/?profileId=ACoAACHNasMBx5j8WcPpSulTfdUsLVip2OVOMjg&treasuryMediaId=1635465661092>Report/Thesis</a>] </p>
 					</header>
-					<p><span style="text-decoration: underline;">T. Kipf</span>, E. van der Pol, M. Welling, <span style="font-weight: bold">Contrastive Learning of Structured World Models</span>, (ICLR 2020), <span style="font-weight: bold; color: #DC143C">Oral</span> [<a href='https://arxiv.org/abs/1911.12247'>Link</a>, <a
-										href="https://arxiv.org/pdf/1911.12247.pdf">PDF (arXiv)</a>].</p>
+					<p class="small-text">
+						<ul>
+							<li>
+							Led a warehouse improvement project that involved relocating departments to optimize flow value and increase capacity by 2800 ft2, using MATLAB to assess and visualize the changes.
+							</li>
+							<li>
+							Improved logistics efficiency by optimizing the path for forklift trucks, reducing wait time by 20% and enhancing productivity.
+							</li>
+							<li>
+							Boosted revenue by 10% by designing and implementing wedges for coil steels, reducing damage and waste.
+							</li>
+							<li>
+							Authored a comprehensive 40-page academic report detailing the project methodology, results, and recommendations for future improvements with a team of seven.
+							</li>
+						</ul>
+					</p>			
 				</div>
 			</div>
-			<hr />
+			
+		
+			<!--
 			<div class="row 200%">
 				<div class="3u 4u(large) 12u$(medium)">
 						<div class="image rounded"><img src="images/compile.png" width="180" alt="" style="border:none;" /></div>
