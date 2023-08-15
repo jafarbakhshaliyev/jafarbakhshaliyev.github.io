@@ -59,13 +59,19 @@
 		margin-right: 1rem;
 		margin-left: 2rem;
 		margin-top: 2rem;
-		width: 10%;
-		height: 20%;
+		margin-bottom: 2em;
+		width: 100%; /* Adjust the width as needed */
+		max-width: 400px; /* Set the maximum width for the container */
+		height: auto; /* Height will be automatically adjusted to maintain aspect ratio */
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	
 	.image-container img {
 		max-width: 65%;
 		max-height: 50%;
+
 	}
 	
 	.blog-details {
@@ -116,7 +122,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		height: 70vh; /* Adjust this value as needed */
+		height: 45vh; /* Adjust this value as needed */
 	}
 
 	.twitter-timeline {
