@@ -116,7 +116,7 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		height: 70vh; /* Adjust this value as needed */
+		height: 50vh; /* Adjust this value as needed */
 	}
 
 	.twitter-timeline {
