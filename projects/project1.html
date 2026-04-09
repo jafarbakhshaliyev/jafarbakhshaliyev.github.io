@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lex Fridman Podcast Search</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        .loading {
+            display: none;
+        }
+        .loading.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h1 class="text-3xl font-bold text-center mb-2">Lex Fridman Podcast Search</h1>
+            <p class="text-gray-600 text-center">Search through all Lex Fridman podcast transcripts</p>
+        </div>
+
+        <!-- Search Form -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <div class="flex gap-4">
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    placeholder="Ask a question about the podcasts..."
+                    class="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                >
+                <button 
+                    onclick="performSearch()"
+                    id="searchButton"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                    Search
+                </button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading text-center py-4">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p class="mt-2 text-gray-600">Searching podcasts...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error" class="hidden mt-4 p-4 bg-red-100 text-red-700 rounded-lg"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden bg-white rounded-lg shadow-lg p-6">
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-3">Answer:</h2>
+                <div id="answer" class="text-gray-700 bg-gray-50 p-4 rounded-lg"></div>
+            </div>
+
+            <div>
+                <h2 class="text-xl font-semibold mb-3">Relevant Excerpts:</h2>
+                <div id="excerpts" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const error = document.getElementById('error');
+            const button = document.getElementById('searchButton');
+            const answer = document.getElementById('answer');
+            const excerpts = document.getElementById('excerpts');
+
+            // Validate input
+            if (!searchInput.value.trim()) {
+                error.textContent = 'Please enter a search query';
+                error.classList.remove('hidden');
+                return;
+            }
+
+            // Reset UI
+            error.classList.add('hidden');
+            results.classList.add('hidden');
+            loading.classList.add('active');
+            button.disabled = true;
+            const API_URL = 'http://your-server-ip:8000';
+
+            try {
+                const response = await fetch(`${API_URL}/api/search`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      query: searchQuery,
+                      top_k: 5
+                  })
+              })
+
+                if (!response.ok) {
+                    throw new Error('Search failed. Please try again.');
+                }
+
+                const data = await response.json();
+
+                // Display answer
+                answer.textContent = data.answer;
+
+                // Display excerpts
+                excerpts.innerHTML = data.chunks.map(chunk => `
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between text-sm text-gray-500 mb-2">
+                            <span>Episode: ${chunk.episode}</span>
+                            <span>Time: ${chunk.timestamp}</span>
+                        </div>
+                        <p class="text-gray-700">${chunk.content}</p>
+                        <p class="text-gray-500 mt-1">Speaker: ${chunk.speaker}</p>
+                    </div>
+                `).join('');
+
+                results.classList.remove('hidden');
+
+            } catch (err) {
+                error.textContent = err.message;
+                error.classList.remove('hidden');
+            } finally {
+                loading.classList.remove('active');
+                button.disabled = false;
+            }
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>
