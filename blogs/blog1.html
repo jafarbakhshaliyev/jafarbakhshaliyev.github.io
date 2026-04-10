@@ -1,384 +1,141 @@
 <!DOCTYPE HTML>
-<!--
-	Spatial by TEMPLATED
-	templated.co @templatedco
-	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
--->
 <html>
-	<head>
-		<title>Scaling Up with MPI and Multiprocessing: Strategies and Best Practices| Jafar Bakhshaliyev | Universität Hildesheim</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<meta name="description" content="" />
-		<meta name="keywords" content="" />
-		<meta name="twitter:card" content="summary_large_image">
-		<meta name="twitter:site" content="@JafarBakhshali1">
-		<meta name="twitter:title" content="Scaling Up with MPI and Multiprocessing: Strategies and Best Practices">
-		<meta name="twitter:description" content="Many important real-world datasets come in the form of graphs or networks: social networks, knowledge graphs, protein-interaction networks, the World Wide Web, etc. (just to name a few). Yet, until recently, very little attention has been devoted to the generalization of neural...">
-		<meta name="twitter:creator" content="@JafarBakhshali1">
-		<meta name="twitter:domain" content="http://tkipf.github.io/graph-convolutional-networks/">
-		<meta name="twitter:image" content="http://tkipf.github.io/graph-convolutional-networks/images/gcn_web.png">
-		<meta property="og:title" content="Scaling Up with MPI and Multiprocessing: Strategies and Best Practices" />
-		<meta property="og:description" content="Many important real-world datasets come in the form of graphs or networks: social networks, knowledge graphs, protein-interaction networks, the World Wide Web, etc. (just to name a few). Yet, until recently, very little attention has been devoted to the generalization of neural..." />
-		<meta name="og:image" content="http://tkipf.github.io/graph-convolutional-networks/images/gcn_web.png">
-		<meta name="og:url" content="http://tkipf.github.io/graph-convolutional-networks/">
 
-		<noscript>
-			<link rel="stylesheet" href="/css/style.css" />
-			<link rel="stylesheet" href="/css/skel.css" />
-			<link rel="stylesheet" href="/css/style-xlarge.css" />
-		</noscript>
-		<link rel="stylesheet" type="text/css"
-		href="https://fonts.googleapis.com/css?family=Raleway:400,700">
-		<link rel="stylesheet" type="text/css"
-		href="https://fonts.googleapis.com/css?family=Open+Sans">
-		<script src="https://kit.fontawesome.com/7c0ff2a316.js" crossorigin="anonymous"></script>
-		<!--[if lte IE 8]><script src="../js/html5shiv.js"></script><![endif]-->
-		<script src="/js/jquery.min.js"></script>
-		<script src="/js/skel.min.js"></script>
-		<script src="/js/skel-layers.min.js"></script>
-		<script src="/js/init.js"></script> <!-- NOTE: Pulls CSS files from static server -->
-		<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
-		<script>
-			$(document).ready(function(){
-				$('video').click( function(){
-					if (this.paused) {
-			        this.play();
-			    } else {
-			        this.pause();
-			    }
-			    return false;
-				});
-			});
-		</script>
-	</head>
-	<body class="landing">
+<head>
+    <title>Data Augmentation in Time Series Analysis | Jafar Bakhshaliyev</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description" content="A practical note on data augmentation in time series analysis." />
+    <meta name="keywords" content="time series, augmentation, forecasting, machine learning" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <noscript>
+        <link rel="stylesheet" href="/css/style.css" />
+        <link rel="stylesheet" href="/css/skel.css" />
+        <link rel="stylesheet" href="/css/style-xlarge.css" />
+    </noscript>
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Raleway:500,700">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700">
+    <script src="https://kit.fontawesome.com/7c0ff2a316.js" crossorigin="anonymous"></script>
+    <!--[if lte IE 8]><script src="/js/html5shiv.js"></script><![endif]-->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/skel-layers.min.js"></script>
+    <script src="/js/init.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
 
-		<div id="fb-root"></div>
-		<script>(function(d, s, id) {
-		  var js, fjs = d.getElementsByTagName(s)[0];
-		  if (d.getElementById(id)) return;
-		  js = d.createElement(s); js.id = id;
-		  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.7";
-		  fjs.parentNode.insertBefore(js, fjs);
-		}(document, 'script', 'facebook-jssdk'));</script>
-		<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
-		<!-- Newsharecounts twitter counter (currently doesn't count re-tweets - bug?)
-		<script type="text/javascript" src="//newsharecounts.s3-us-west-2.amazonaws.com/nsc.js"></script><script type="text/javascript">window.newShareCountsAuto="smart";</script>
-		-->
-		<!-- Opensharecount twitter counter -->
-		<script type="text/javascript" src="//opensharecount.com/bubble.js"></script>
+<body class="landing">
+    <header id="header">
+        <nav id="nav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/#papers">Papers</a></li>
+                <li><a href="/#two">Projects</a></li>
+                <li><a href="/blogs/" class="active">Blogs</a></li>
+                <li><a href="/books/">Books</a></li>
+                <li><a href="/blogs/blog1.html#footer">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
 
-		<!-- Header -->
-			<header id="header">
-				<ul class="icons">
-					<li>
-						<a href="https://github.com/jafarbakhshaliyev" class="icon fa-brands fa-github"></a>
-					</li>
-					<li>
-						<a href="https://twitter.com/JafarBakhshali1" class="icon fa-brands fa-twitter"></a>
-					</li>
-					<li>
-						<a href="https://www.linkedin.com/in/jafarbakhshaliyev" class="icon fa-brands fa-linkedin"></a>
-					</li>
-				</ul>
-				<nav id="nav">
-					<ul>
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/#two">Projects</a></li>
-                        <li><a href="/blogs/" class="active">Blogs</a></li>
-                        <li><a href="/blogs/#footer">Contact</a></li>
-                    </ul>
-				</nav>
-			</header>
+    <section id="one" class="wrapper style1 special blogwrapper">
+        <div class="container 75%">
+            <header class="major blogheader">
+                <h2>Coming Soon</h2>
+                <p>This blog post is being prepared and will be published soon.</p>
+            </header>
 
-			<!-- One -->
-				<section id="one" class="wrapper style1 special blogwrapper">
-					<div class="container 75%">
-						<header class="major blogheader">
-							<h2>Scaling Up with MPI and Multiprocessing:</h2>
-                            <h2>Strategies and Best Practices</h2>
-							<p>Jafar Bakhshaliyev, 15 September 2023</p>
-						</header>
-						<div class="align-left blog">
-							<div class="figure">
-							<img src="images/gcn_web.png" alt="Multi-layer Graph Convolutional Network (GCN) with first-order filters." />
-							<p class="caption">Multi-layer Graph Convolutional Network (GCN) with first-order filters.</p>
-							<div class="social_buttons">
-							<span class="twitter_button"><a href="https://twitter.com/share" class="twitter-share-button" data-text="How powerful are Graph Convolutional Networks? - An introduction to neural networks on graphs" data-url="http://jafarbakhshaliyev.github.io/blogs/" data-via="JafarBakhshali1" data-lang="en" data-show-count="false">Tweet</a> <a href="http://leadstories.com/opensharecount" target="_blank" class="osc-counter" data-dir="left"  data-url="jafarbakhshaliyev.github.io/blogs/" title="Powered by Lead Stories' OpenShareCount">0</a>
-</span>
-							<span class="facebook_button"><div class="fb-share-button" data-href="http://jafarbakhshaliyev.github.io/blogs/" data-layout="button_count" data-size="small" data-mobile-iframe="false"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Ftkipf.github.io%graph-convolutional-networks%2F&amp;src=sdkpreparse">Share</a></div></span>
-							</div>
-							</div>
-							<h3 id="overview">Overview</h3>
-							
-							<h3 id="outline">Outline</h3>
-							
+            <div class="align-left blog" style="display: none;">
+                <div class="figure">
+                    <img src="/blogs/images/timeseries_preview.png" alt="Data augmentation for time series" />
+                    <p class="caption">Placeholder image (you can replace this later).</p>
+                </div>
 
-							<h3 id="mpi">Message Passing Interface (MPI)</h3>
+                <h3>Overview</h3>
+                <p>
+                    This post is a working draft where I summarize key ideas, practical tricks, and findings from my two papers.
+                    I will update this page progressively with experiments and insights.
+                </p>
 
-							<p>Example 1: Point-to-Point communication (Vector Multiplication)</p>
-                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.61.0/lib/codemirror.min.css">
-                            <script src="https://cdn.jsdelivr.net/npm/codemirror@5.61.0/lib/codemirror.js"></script>
-                            <script src="https://cdn.jsdelivr.net/npm/codemirror@5.61.0/addon/runmode/runmode-standalone.min.js"></script>
-                            <script src="https://cdn.jsdelivr.net/npm/codemirror@5.61.0/mode/python/python.min.js"></script>
-                            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.61.0/theme/yonce.css">
-                            <style>
-                                #python_code1, #python_code2, #python_code3 {
-                                    background-color: rgba(7, 7, 7, 0.907);
-                                    COLOR:rgb(247, 244, 244);
-                                    border-radius: 5px; /* Rounded corners */
-                                    padding: 10px; /* Add padding */
-                                    width: 90%; /* Adjust width as needed */
-                                    margin: 0 auto; /* Center the code block */
-                                }
-                            </style>
-							<script>
-								document.addEventListener("DOMContentLoaded", function() {
-									// Apply the logic to the first code block with id "python_code_1"
-									var codeElement1 = document.getElementById('python_code1');
-									codeElement1.classList.add('cm-s-yonce');
-									var code1 = codeElement1.innerText;
-									codeElement1.innerHTML = "";
-									CodeMirror.runMode(code1, 'python', codeElement1);
-							
-									// Apply the same logic to the second code block with id "python_code_2"
-									var codeElement2 = document.getElementById('python_code2');
-									codeElement2.classList.add('cm-s-yonce');
-									var code2 = codeElement2.innerText;
-									codeElement2.innerHTML = "";
-									CodeMirror.runMode(code2, 'python', codeElement2);
+                <h3>Core Idea</h3>
+                <p>
+                    Data augmentation improves model generalization by creating meaningful transformed samples that preserve semantic structure.
+                    In forecasting settings, this can be viewed as sampling from a transformation family $T_\theta$ and optimizing expected risk:
+                </p>
+                <p>\[
+                    \min_f \; \mathbb{E}_{(x,y)\sim \mathcal{D}}\;\mathbb{E}_{\theta\sim p(\theta)}\left[\ell\big(f(T_\theta(x)), y\big)\right].
+                \]</p>
 
-									// Apply the same logic to the second code block with id "python_code_2"
-									var codeElement3 = document.getElementById('python_code3');
-									codeElement3.classList.add('cm-s-yonce');
-									var code3 = codeElement3.innerText;
-									codeElement3.innerHTML = "";
-									CodeMirror.runMode(code3, 'python', codeElement3);
-								});
-							</script>
-    
-<pre><code id="python_code1">
-from mpi4py import MPI
-import logging
-import numpy as np
-from datetime import datetime
-logging.basicConfig(format='%(asctime)s: %(name)s %(message)s')
-comm = MPI.COMM_WORLD
-logger = logging.getLogger(str(comm.Get_rank()))
-logger.warning(f"MPI: rank {comm.Get_rank()} / {comm.Get_size()}")
-my_rank = comm.Get_rank()
-size = comm.Get_size()
-a = [0, 1, 2, 3, 4, 5]
-b = [6, 7, 8, 9, 10, 11]
-n = len(a) // size
-start = datetime.now()
-for j in range(100000):
-    sub_a = np.array_split(a, size)[my_rank]
-    sub_b = np.array_split(b, size)[my_rank]
-    sub_result = sum([sub_a[i] * sub_b[i] for i in range(len(sub_a))])
-    if my_rank != 0:
-        comm.send(sub_result, dest=0)
-    else:
-        result = sub_result
-        for i in range(1, size):
-            sub_result = comm.recv(source=i)
-            result += sub_result
-if my_rank == 0:
-    print("Vector Multiplication:", result)
-    print(f"Took {datetime.now() - start}")
-        </code></pre>
-                               
-<p> Exercise 2: Collective Communication (Vector Multiplication) </p>								
-<pre><code id="python_code2">
-from mpi4py import MPI
-import logging
-import numpy as np
-from datetime import datetime
-logging.basicConfig(format='%(asctime)s: %(name)s %(message)s')
-comm = MPI.COMM_WORLD
-logger = logging.getLogger(str(comm.Get_rank()))
-logger.warning(f"MPI: rank {comm.Get_rank()} / {comm.Get_size()}")
-my_rank = comm.Get_rank()
-size = comm.Get_size()
-start = datetime.now()
-if my_rank == 0:
-    a = np.array([0, 1, 2, 3, 4, 5])
-    b = np.array([6, 7, 8, 9, 10, 11])
-    a = np.array_split(a, size)
-    b = np.array_split(b, size)
-    start = datetime.now()
-else:
-    a = None
-    b = None
+                <h3>Simple Taxonomy</h3>
+                <ul>
+                    <li>Time-domain transforms: jittering, scaling, window slicing, permutation.</li>
+                    <li>Frequency-domain transforms: spectral filtering, wavelet-based masking and mixing.</li>
+                    <li>Sample-mixing transforms: linear or patch mixing between compatible series.</li>
+                </ul>
 
-a = comm.scatter(a, root=0)
-b = comm.scatter(b, root=0)
+                <h3>Code Sketch</h3>
+<pre><code>import numpy as np
 
-for j in range(100000):
-    sub_result = sum([a[i] * b[i] for i in range(len(a))])
-    result = comm.reduce(sub_result, op=MPI.SUM, root = 0)
-if my_rank == 0:
-    print("Vector Multiplication:", result)
-    print(f"Took {datetime.now() - start}")
-		</code></pre> 
-		<p> Exercise 3: Distributed Sorting</p>				
-		<pre><code id="python_code3">
-			from mpi4py import MPI
-import logging
-import numpy as np
-from datetime import datetime
-logging.basicConfig(format = '%(asctime)s: %(name)s %(message)s')
-comm = MPI.COMM_WORLD
-logger = logging.getLogger(str(comm.Get_rank()))
-logger.warning(f"MPI: rank {comm.Get_rank()} / {comm.Get_size()}")
-my_rank = comm.Get_rank()
-size = comm.Get_size()
-my_list = list(range(10000))
-np.random.shuffle(my_list)
-sub_array = np.array_split(my_list, size)
-sub_array = comm.scatter(sub_array, root=0)
-sorted_arr = sorted(sub_array)
-sorted_array = comm.gather(sorted_arr, root = 0)
-if my_rank == 0:
-    final_result = []
-    while len(final_result) < len(my_list):
-        min_num = np.inf
-        index_min = None
-        for i in range(size):
-            if len(sorted_array[i]) > 0 and sorted_array[i][0] < min_num:
-                min_num = sorted_array[i][0]
-                index_min = i
-        if index_min is not None:
-            final_result.append(min_num)
-            sorted_array[index_min] = sorted_array[index_min][1:]
-    print('Sorted list:', final_result)
-						</code></pre> 
+def jitter(x, sigma=0.02):
+    noise = np.random.normal(0.0, sigma, size=x.shape)
+    return x + noise
 
+def scaling(x, low=0.9, high=1.1):
+    factor = np.random.uniform(low, high)
+    return x * factor
+</code></pre>
 
-						
-		
-					
+                <h3>Key Findings (Placeholder)</h3>
+                <p>
+                    I will add concise bullet-point takeaways from both papers here,
+                    including which augmentations worked best under distribution shift,
+                    and when they did not help.
+                </p>
 
+                <hr />
+                <h3>Comments</h3>
+                <p>
+                    Commenting is enabled via Disqus. To activate on your site, replace
+                    <code>your-disqus-shortname</code> below with your Disqus shortname.
+                </p>
+                <div id="disqus_thread"></div>
+                <script>
+                    var disqus_config = function () {
+                        this.page.url = window.location.origin + '/blogs/blog1.html';
+                        this.page.identifier = 'data-augmentation-time-series-analysis';
+                    };
+                    (function () {
+                        var d = document;
+                        var s = d.createElement('script');
+                        s.src = 'https://https-jafarbakhshaliyev-github-io.disqus.com/embed.js';
+                        s.setAttribute('data-timestamp', +new Date());
+                        (d.head || d.body).appendChild(s);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view comments powered by Disqus.</noscript>
+            </div>
+        </div>
+    </section>
 
+    <footer id="footer">
+        <div class="container">
+            <ul class="icons">
+                <li><a href="mailto:jafar.bakhshaliyev@gmail.com" class="icon solid fa-envelope"><span class="label">Email</span></a></li>
+                <li><a href="https://www.linkedin.com/in/jafarbakhshaliyev/" class="icon brands fa-linkedin" target="_blank"><span class="label">LinkedIn</span></a></li>
+                <li><a href="https://scholar.google.com/citations?user=hOG05K8AAAAJ&hl=en" class="icon solid fa-graduation-cap" target="_blank"><span class="label">Google Scholar</span></a></li>
+                <li><a href="https://github.com/jafarbakhshaliyev" class="icon brands fa-github" target="_blank"><span class="label">GitHub</span></a></li>
+                <li><a href="https://twitter.com/JafarBakhshali1" class="icon brands fa-x-twitter" target="_blank"><span class="label">Twitter</span></a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; 2026 Jafar Bakhshaliyev</li>
+            </ul>
+        </div>
+    </footer>
+</body>
 
-
-							<h4 id="recent-literature">Recent literature</h4>
-							
-							<h4 id="gcns-part-ii-a-simple-example">GCNs Part II: A simple example</h4>
-							<p>As an example, let's consider the following very simple form of a layer-wise propagation rule:</p>
-							<p><span class="math display">\[f(H^{(l)}, A) = \sigma\left( AH^{(l)}W^{(l)}\right) \, ,\]</span></p>
-							<p>where <span class="math inline">\(W^{(l)}\)</span> is a weight matrix for the <span class="math inline">\(l\)</span>-th neural network layer and <span class="math inline">\(\sigma(\cdot)\)</span> is a non-linear activation function like the <span class="math inline">\(\text{ReLU}\)</span>. Despite its simplicity this model is already quite powerful (we'll come to that in a moment).</p>
-							<p>But first, let us address two limitations of this simple model: multiplication with <span class="math inline">\(A\)</span> means that, for every node, we sum up all the feature vectors of all neighboring nodes but not the node itself (unless there are self-loops in the graph). We can &quot;fix&quot; this by enforcing self-loops in the graph: we simply add the identity matrix to <span class="math inline">\(A\)</span>.</p>
-							<p>The second major limitation is that <span class="math inline">\(A\)</span> is typically not normalized and therefore the multiplication with <span class="math inline">\(A\)</span> will completely change the scale of the feature vectors (we can understand that by looking at the eigenvalues of <span class="math inline">\(A\)</span>). Normalizing <span class="math inline">\(A\)</span> such that all rows sum to one, i.e. <span class="math inline">\(D^{-1}A\)</span>, where <span class="math inline">\(D\)</span> is the diagonal node degree matrix, gets rid of this problem. Multiplying with <span class="math inline">\(D^{-1}A\)</span> now corresponds to taking the average of neighboring node features. In practice, dynamics get more interesting when we use a symmetric normalization, i.e. <span class="math inline">\(D^{-\frac{1}{2}}AD^{-\frac{1}{2}}\)</span> (as this no longer amounts to mere averaging of neighboring nodes). Combining these two tricks, we essentially arrive at the propagation rule introduced in <a target="_blank" href="http://arxiv.org/abs/1609.02907">Kipf &amp; Welling</a> (ICLR 2017):</p>
-							<p><span class="math display">\[f(H^{(l)}, A) = \sigma\left( \hat{D}^{-\frac{1}{2}}\hat{A}\hat{D}^{-\frac{1}{2}}H^{(l)}W^{(l)}\right) \, ,\]</span></p>
-							<p>with <span class="math inline">\(\hat{A} = A + I\)</span>, where <span class="math inline">\(I\)</span> is the identity matrix and <span class="math inline">\(\hat{D}\)</span> is the diagonal node degree matrix of <span class="math inline">\(\hat{A}\)</span>.</p>
-							<p>In the next section, we will take a closer look at how this type of model operates on a very simple example graph: Zachary's karate club network (make sure to check out the <a target="_blank" href="https://en.wikipedia.org/wiki/Zachary%27s_karate_club">Wikipedia article</a>!).</p>
-							<h4 id="gcns-part-iii-embedding-the-karate-club-network">GCNs Part III: Embedding the karate club network</h4>
-							<div class="figure">
-							<img src="images/karate.png" alt="Karate club graph, colors denote communities obtained via modularity-based clustering (Brandes et al., 2008)." />
-							<p class="caption">Karate club graph, colors denote communities obtained via modularity-based clustering (<a target="_blank" href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.68.6623">Brandes et al.</a>, 2008).</p>
-							</div>
-							<p>Let's take a look at how our simple GCN model (see previous section or <a target="_blank" href="http://arxiv.org/abs/1609.02907">Kipf &amp; Welling</a>, ICLR 2017) works on a well-known graph dataset: Zachary's karate club network (see Figure above).</p>
-							<p>We take a 3-layer GCN with randomly initialized weights. Now, even before training the weights, we simply insert the adjacency matrix of the graph and <span class="math inline">\(X = I\)</span> (i.e. the identity matrix, as we don't have any node features) into the model. The 3-layer GCN now performs three propagation steps during the forward pass and effectively convolves the 3rd-order neighborhood of every node (all nodes up to 3 &quot;hops&quot; away). Remarkably, the model produces an embedding of these nodes that closely resembles the community-structure of the graph (see Figure below). Remember that we have initialized the weights completely at random and have not yet performed any training updates (so far)!</p>
-							<div class="figure">
-							<img src="images/karate_emb.png" alt="GCN embedding (with random weights) for nodes in the karate club network." />
-							<p class="caption">GCN embedding (with random weights) for nodes in the karate club network.</p>
-							</div>
-							<p>This might seem somewhat surprising. A recent paper on a model called DeepWalk (<a target="_blank" href="https://arxiv.org/abs/1403.6652">Perozzi et al.</a>, KDD 2014) showed that they can learn a very similar embedding in a complicated unsupervised training procedure. How is it possible to get such an embedding more or less &quot;for free&quot; using our simple untrained GCN model?</p>
-							<p>We can shed some light on this by interpreting the GCN model as a generalized, differentiable version of the well-known Weisfeiler-Lehman algorithm on graphs. The (1-dimensional) Weisfeiler-Lehman algorithm works as follows<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a>:</p>
-							<p>For all nodes <span class="math inline">\(v_i\in \mathcal{G}\)</span>:</p>
-							<ul>
-							<li>Get features<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> <span class="math inline">\(\{h_{v_j}\}\)</span> of neighboring nodes <span class="math inline">\(\{v_j\}\)</span></li>
-							<li>Update node feature <span class="math inline">\(h_{v_i} \leftarrow \text{hash}\left(\sum_j h_{v_j}\right)\)</span>, where <span class="math inline">\(\text{hash}(\cdot)\)</span> is (ideally) an injective hash function</li>
-							</ul>
-							<p>Repeat for <span class="math inline">\(k\)</span> steps or until convergence.</p>
-							<p>In practice, the Weisfeiler-Lehman algorithm assigns a unique set of features for <em>most</em> graphs. This means that every node is assigned a feature that uniquely describes its role in the graph. Exceptions are highly regular graphs like grids, chains, etc. For most irregular graphs, this feature assignment can be used as a check for graph isomorphism (i.e. whether two graphs are identical, up to a permutation of the nodes).</p>
-							<p>Going back to our Graph Convolutional layer-wise propagation rule (now in vector form):</p>
-							<p><span class="math display">\[h^{(l+1)}_{v_i} = \sigma \left( \sum_{j} \frac{1}{c_{ij}}h^{(l)}_{v_j}W^{(l)} \right) \, ,\]</span></p>
-							<p>where <span class="math inline">\(j\)</span> indexes the neighboring nodes of <span class="math inline">\(v_i\)</span>. <span class="math inline">\(c_{ij}\)</span> is a normalization constant for the edge <span class="math inline">\((v_i,v_j)\)</span> which originates from using the symmetrically normalized adjacency matrix <span class="math inline">\(D^{-\frac{1}{2}}AD^{-\frac{1}{2}}\)</span> in our GCN model. We now see that this propagation rule can be interpreted as a differentiable and parameterized (with <span class="math inline">\(W^{(l)}\)</span>) variant of the hash function used in the original Weisfeiler-Lehman algorithm. If we now choose an appropriate non-linearity and initialize the random weight matrix such that it is orthogonal (or e.g. using the initialization from <a target="_blank" href="http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf">Glorot &amp; Bengio</a>, AISTATS 2010), this update rule becomes stable in practice (also thanks to the normalization with <span class="math inline">\(c_{ij}\)</span>). And we make the remarkable observation that we get meaningful smooth embeddings where we can interpret distance as (dis-)similarity of local graph structures!</p>
-							<h4 id="gcns-part-iv-semi-supervised-learning">GCNs Part IV: Semi-supervised learning</h4>
-							<p>Since everything in our model is differentiable and parameterized, we can add some labels, train the model and observe how the embeddings react. We can use the semi-supervised learning algorithm for GCNs introduced in <a target="_blank" href="http://arxiv.org/abs/1609.02907">Kipf &amp; Welling</a> (ICLR 2017). We simply label one node per class/community (highlighted nodes in the video below) and start training for a couple of iterations<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>:</p>
-							<div class="figure">
-							<div class="video"><video width='640' preload='auto' muted controls poster='images/video_.png'>
-								<source src='images/video.mp4' type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'/></video>
-							</div>
-							<p class="caption">Semi-supervised classification with GCNs: Latent space dynamics for 300 training iterations with a single label per class. Labeled nodes are highlighted.</p>
-							</div>
-							<p>Note that the model directly produces a 2-dimensional latent space which we can immediately visualize. We observe that the 3-layer GCN model manages to linearly separate the communities, given only one labeled example per class. This is a somewhat remarkable result, given that the model received no feature description of the nodes. At the same time, initial node features <em>could</em> be provided, which is exactly what we do in the experiments described in our paper (<a target="_blank" href="http://arxiv.org/abs/1609.02907">Kipf &amp; Welling</a>, ICLR 2017) to achieve state-of-the-art classification results on a number of graph datasets.</p>
-							<h3 id="conclusion">Conclusion</h3>
-							<p>Research on this topic is just getting started. The past several months have seen exciting developments, but we have probably only scratched the surface of these types of models so far. It remains to be seen how neural networks on graphs can be further taylored to specific types of problems, like, e.g., learning on directed or relational graphs, and how one can use learned graph embeddings for further tasks down the line, etc. This list is by no means exhaustive and I expect further interesting applications and extensions to pop up in the near future. Let me know in the comments below if you have some exciting ideas or questions to share!</p>
-							<h5 id="thanks-to-the-following-people">Thanks to the following people:</h5>
-							<p>Max Welling, Taco Cohen, Chris Louizos and Karen Ullrich (for many discussions and feedback both on the paper and this blog post). Also I'd like to thank Ferenc Huszar for highlighting some drawbacks of these kinds of models.</p>
-							<h5 id="a-note-on-completeness">A note on completeness</h5>
-							<p>This blog post constitutes by no means an exhaustive review of the field of neural networks on graphs. I have left out a number of both recent and older papers to make this post more readable and to give it a coherent story line. The papers that I mentioned here will nonetheless serve as a good start if you want to dive deeper into this topic and get a complete overview of what is around and what has been tried so far.</p>
-							<h5 id="citation">Citation</h5>
-							<p>If you want to use some of this in your own work, you can cite our <a target="_blank" href="http://arxiv.org/abs/1609.02907">paper</a> on Graph Convolutional Networks:</p>
-<pre><code>@article{kipf2016semi,
-  title={Semi-Supervised Classification with Graph Convolutional Networks},
-  author={Kipf, Thomas N and Welling, Max},
-  journal={arXiv preprint arXiv:1609.02907},
-  year={2016}
-}</code></pre>
-							<h5 id="source-code">Source code</h5>
-							<p>We have released the code for Graph Convolutional Networks on GitHub: <a target="_blank" href="https://github.com/tkipf/gcn">https://github.com/tkipf/gcn</a>.</p>
-							<p>You can follow me on <a target="_blank" href="https://twitter.com/JafarBakhshali1">Twitter</a> for future updates.</p>
-							<div class="social_buttons">
-							<span class="twitter_button"><a href="https://twitter.com/share" class="twitter-share-button" data-text="How powerful are Graph Convolutional Networks? - An introduction to neural networks on graphs" data-url="http://jafarbakhshaliyev.github.io/blogs/" data-via="JafarBakhshali1" data-lang="en" data-show-count="false">Tweet</a> <a href="http://leadstories.com/opensharecount" target="_blank" class="osc-counter" data-dir="left" data-url="jafarbakhshaliyevgithub.io/blogs/" title="Powered by Lead Stories' OpenShareCount">0</a>
-</span>
-							<span class="facebook_button"><div class="fb-share-button" data-href="http://jafarbakhshaliyev.github.io/blogs/" data-layout="button_count" data-size="small" data-mobile-iframe="false"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Ftkipf.github.io%graph-convolutional-networks%2F&amp;src=sdkpreparse">Share</a></div></span>
-							</div>
-							<hr />
-							
-
-							<div id="disqus_thread"></div>
-<script>
-var disqus_config = function () {
-    this.page.url = 'http://jafarbkahshaliyev.github.io/blogs/';  // Replace PAGE_URL with your page's canonical URL variable
-    this.page.identifier = 'blog1'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-};
-(function() { // DON'T EDIT BELOW THIS LINE
-    var d = document, s = d.createElement('script');
-    s.src='https://https-jafarbakhshaliyev-github-io.disqus.com/embed.js';
-    s.setAttribute('data-timestamp', +new Date());
-    (d.head || d.body).appendChild(s);
-})();
-</script>
-<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-
-
-
-							<!--
-							<div class="figure">
-							<div class="video"><video width='640' preload='auto' muted controls poster='images/video_.png'>
-								<source src='images/video.mp4' type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'/></video>
-							</div>
-							<p class="caption">Semi-supervised classification with GCNs: Latent space dynamics for 300 training iterations with a single label per class. Labeled nodes are highlighted.</p>
-							</div>
-						-->
-						</div>
-				</section>
-
-
-		<!-- Footer -->
-			<footer id="footer">
-				<div class="container">
-					<h2>Get in touch</h2>
-					<ul class="icons">
-						<li>
-							<a href="https://github.com/jafarbakhshaliyev" class="icon fa-brands fa-github"></a>
-						</li>
-						<li>
-							<a href="https://twitter.com/JafarBakhshali1" class="icon fa-brands fa-twitter"></a>
-						</li>
-						<li>
-							<a href="https://www.linkedin.com/in/jafarbakhshaliyev" class="icon fa-brands fa-linkedin"></a>
-						</li>
-					</ul>
-					<ul class="copyright">
-						<li>&copy; 2023 Jafar Bakhshaliyev</li>
-					</ul>
-				</div>
-			</footer>
-
-	</body>
 </html>
