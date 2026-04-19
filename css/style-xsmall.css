@@ -94,11 +94,11 @@ input[type="button"],
 
 /* Footer */
 
-#footer {
+#contact {
     padding: 3em 0 1em 0;
 }
 
-    #footer .copyright li {
+    #contact .copyright li {
         border-left: 0;
         display: block;
         margin: 0;

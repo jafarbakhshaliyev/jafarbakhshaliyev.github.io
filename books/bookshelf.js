@@ -195,10 +195,10 @@ document.querySelectorAll('.bookshelf-row').forEach(shelf => {
     <nav id="nav">
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/#two">Projects</a></li>
+            <li><a href="/#projects">Projects</a></li>
             <li><a href="/blogs">Blogs</a></li>
             <li><a href="/books/" class="active">Books</a></li>
-            <li><a href="/books/#footer">Contact</a></li>
+            <li><a href="/#contact">Contact</a></li>
         </ul>
     </nav>
 </header>
@@ -501,7 +501,7 @@ document.querySelectorAll('.bookshelf-row').forEach(shelf => {
     
 
 <!-- Footer -->
-<footer id="footer">
+<footer id="contact">
     <div class="container">
         <h2>Get in touch</h2>
         <ul class="icons">

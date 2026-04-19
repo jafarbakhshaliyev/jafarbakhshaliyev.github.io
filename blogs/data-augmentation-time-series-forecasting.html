@@ -1,0 +1,1225 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Data Augmentation in Time Series Forecasting | Jafar Bakhshaliyev</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description"
+        content="A blog post on data augmentation for time series forecasting, reviewing frequency-domain, decomposition-based, and patch-based methods, culminating in Temporal Patch Shuffle (TPS)." />
+    <meta name="keywords" content="time series, forecasting, data augmentation, TPS, wavelet, frequency domain, WaveMask, WaveMix" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <noscript>
+        <link rel="stylesheet" href="/css/style.css" />
+        <link rel="stylesheet" href="/css/skel.css" />
+        <link rel="stylesheet" href="/css/style-xlarge.css" />
+    </noscript>
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Raleway:500,700">
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700">
+    <script src="https://kit.fontawesome.com/7c0ff2a316.js" crossorigin="anonymous"></script>
+    <!--[if lte IE 8]><script src="/js/html5shiv.js"></script><![endif]-->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/skel-layers.min.js"></script>
+    <script src="/js/init.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .blogwrapper {
+            padding-top: 5em;
+            padding-bottom: 4em;
+        }
+
+        .blogheader h2 {
+            margin-bottom: 0.25em;
+        }
+
+        .blog {
+            display: block;
+            text-align: left;
+            font-size: 1rem;
+            line-height: 1.9;
+            color: #2b2b2b;
+        }
+
+        .blog p {
+            margin-bottom: 1.15em;
+        }
+
+        .blog h3 {
+            margin-top: 2.25em;
+            margin-bottom: 0.8em;
+            color: #1f2a44;
+        }
+
+        .blog h4 {
+            margin-top: 1.6em;
+            margin-bottom: 0.5em;
+            color: #2f3f64;
+        }
+
+        .blog .lead {
+            font-size: 1.08rem;
+            color: #404040;
+        }
+
+        .blog .figure {
+            margin: 1.8em 0 2.2em 0;
+            text-align: center;
+            background: #fcfdff;
+            border: 1px solid #e4e9f2;
+            border-radius: 12px;
+            padding: 1rem 1rem 0.9rem 1rem;
+            box-shadow: 0 10px 28px rgba(31, 42, 68, 0.06);
+        }
+
+        .blog .figure img {
+            width: 100%;
+            max-width: 920px;
+            max-height: 72vh;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid #e2e6ef;
+            background: #fafbfd;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .blog .caption {
+            margin-top: 0.7em;
+            font-size: 0.94rem;
+            color: #666;
+        }
+
+        .blog .note,
+        .blog .callout {
+            background: #f7f9fc;
+            border-left: 4px solid #6d84b4;
+            padding: 1em 1.1em;
+            margin: 1.4em 0;
+            border-radius: 6px;
+        }
+
+        .blog .small-note {
+            font-size: 0.93rem;
+            color: #555;
+        }
+
+        .blog code,
+        .blog pre {
+            font-family: Consolas, Monaco, monospace;
+        }
+
+        .blog pre {
+            background: #fbfbfc;
+            border: 1px solid #eceff5;
+            padding: 1em;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 1.4em;
+        }
+
+        .blog ul,
+        .blog ol {
+            margin: 0 0 1.2em 1.2em;
+        }
+
+        .blog .equation-block {
+            background: #fbfbfd;
+            border: 1px solid #eceef5;
+            border-radius: 6px;
+            padding: 1em 1.2em;
+            margin: 1em 0 1.4em 0;
+            overflow-x: auto;
+        }
+
+        .blog .bib li {
+            margin-bottom: 0.7em;
+        }
+
+        .blog .links a,
+        .blog .bib a {
+            word-break: break-word;
+        }
+
+        .blog .section-divider {
+            margin: 2.8em 0 1.2em 0;
+            border: 0;
+            border-top: 1px solid #ebedf2;
+        }
+
+        /* --- Resource callouts for paper/code links --- */
+        .blog .resource-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6em 1.1em;
+            align-items: center;
+            background: linear-gradient(180deg, #f6f9ff 0%, #eff4ff 100%);
+            border: 1px solid #d9e2f5;
+            border-left: 4px solid #4a6db0;
+            border-radius: 8px;
+            padding: 0.9em 1.2em;
+            margin: 1.4em 0 1.8em 0;
+            font-size: 0.97rem;
+        }
+
+        .blog .resource-box .resource-label {
+            font-weight: 700;
+            color: #2f3f64;
+            margin-right: 0.3em;
+        }
+
+        .blog .resource-box a {
+            color: #2f4a8a;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(47, 74, 138, 0.35);
+        }
+
+        .blog .resource-box a:hover {
+            color: #1f2a44;
+            border-bottom-color: #1f2a44;
+        }
+
+        .blog .resource-box i {
+            color: #4a6db0;
+            margin-right: 0.3em;
+        }
+
+        .blog .share-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55em;
+            align-items: center;
+            background: linear-gradient(180deg, #f7faff 0%, #eef4ff 100%);
+            border: 1px solid #dbe4f4;
+            border-left: 4px solid #5b78b8;
+            border-radius: 8px;
+            padding: 0.9em 1.1em;
+            margin: 1.1em 0 1.6em 0;
+        }
+
+        .blog .share-box .share-label {
+            font-weight: 700;
+            color: #2f3f64;
+            margin-right: 0.2em;
+        }
+
+        .blog .share-box a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.3em;
+            height: 2.3em;
+            border-radius: 50%;
+            border: 1px solid #d7dff0;
+            background: #fff;
+            color: #35508e;
+            text-decoration: none;
+            box-shadow: 0 2px 7px rgba(31, 42, 68, 0.06);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+        }
+
+        .blog .share-box a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(31, 42, 68, 0.10);
+            color: #1f2a44;
+        }
+
+        .blog .share-box a i {
+            margin-right: 0;
+            font-size: 1rem;
+        }
+
+        .blog .share-box a.is-copy.copied {
+            color: #1f7a3f;
+            border-color: #b7e0c4;
+        }
+
+        /* --- Pseudocode block styled to match paper Algorithm 1 --- */
+        .blog .algorithm {
+            background: #fbfbfd;
+            border: 1px solid #e2e6ef;
+            border-radius: 8px;
+            padding: 1em 1.2em 1em 1.2em;
+            margin: 1.2em 0 1.8em 0;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.94rem;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .blog .algorithm .algo-title {
+            font-family: 'Open Sans', sans-serif;
+            font-weight: 700;
+            color: #1f2a44;
+            border-bottom: 1px solid #e2e6ef;
+            padding-bottom: 0.5em;
+            margin-bottom: 0.7em;
+        }
+
+        .blog .algorithm .algo-header {
+            font-family: 'Open Sans', sans-serif;
+            color: #2f3f64;
+            margin-bottom: 0.5em;
+        }
+
+        .blog .algorithm ol {
+            margin-left: 1.5em;
+            margin-bottom: 0;
+        }
+
+        .blog .algorithm ol li {
+            margin-bottom: 0.2em;
+        }
+
+        .blog .algorithm .keyword {
+            color: #7a2f7a;
+            font-weight: 700;
+        }
+
+        .blog .algorithm .comment {
+            color: #6b7a99;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body class="landing">
+    <header id="header">
+        <nav id="nav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/#papers">Papers</a></li>
+	                <li><a href="/#projects">Projects</a></li>
+                <li><a href="/blogs/" class="active">Blogs</a></li>
+                <li><a href="/books/">Books</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="one" class="wrapper style1 special blogwrapper">
+        <div class="container 75%">
+            <header class="major blogheader">
+                <h2>Data Augmentation Methods in Time Series Forecasting</h2>
+                <p>From frequency-domain perturbations to time&ndash;frequency wavelets, and
+                    finally to patch-based augmentation.</p>
+            </header>
+
+            <div class="align-left blog">
+
+                <div class="share-box" aria-label="Share this post">
+                    <span class="share-label">Share:</span>
+                    <a data-share="x" href="#" target="_blank" rel="noopener"
+                        aria-label="Share on X" title="X">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </a>
+                    <a data-share="linkedin" href="#" target="_blank" rel="noopener"
+                        aria-label="Share on LinkedIn" title="LinkedIn">
+                        <i class="fa-brands fa-linkedin-in"></i>
+                    </a>
+                    <a data-share="facebook" href="#" target="_blank" rel="noopener"
+                        aria-label="Share on Facebook" title="Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                    <a data-share="reddit" href="#" target="_blank" rel="noopener"
+                        aria-label="Share on Reddit" title="Reddit">
+                        <i class="fa-brands fa-reddit-alien"></i>
+                    </a>
+                    <a data-share="whatsapp" href="#" target="_blank" rel="noopener"
+                        aria-label="Share on WhatsApp" title="WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                    <a data-share="telegram" href="#" target="_blank" rel="noopener"
+                        aria-label="Share on Telegram" title="Telegram">
+                        <i class="fa-brands fa-telegram"></i>
+                    </a>
+                    <a data-share="email" href="#" aria-label="Share by email" title="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a data-share="copy" class="is-copy" href="#" aria-label="Copy page link"
+                        title="Copy link">
+                        <i class="fas fa-link"></i>
+                    </a>
+                </div>
+
+
+                <p class="lead">
+                    Data augmentation is a standard and often necessary component of modern
+                    machine learning pipelines. In computer vision, it is difficult to train a
+                    competitive model without it, and in time series classification a
+                    well-established body of techniques exists, including jittering, scaling,
+                    window slicing, time warping, permutation, rotation, and several pattern-based
+                    variants [1, 11, 12]. Time series forecasting, however, poses a fundamentally
+                    different problem.
+                </p>
+
+                <p>
+                    In forecasting, the target is not a discrete class label but a continuous
+                    segment of the same signal that immediately follows the input. This
+                    distinction changes the nature of the task. A transformation that is safe
+                    for classification&mdash;such as warping part of the input or injecting noise
+                    into a window&mdash;can easily disrupt the relationship between the look-back
+                    window and the forecast horizon. When this relationship is broken, the model
+                    is trained on input&ndash;target pairs that are no longer mutually consistent,
+                    and predictive performance degrades accordingly.
+                </p>
+
+                <p>
+                    Empirically, most classical augmentation methods that perform well in
+                    classification have been evaluated for forecasting and have largely failed to
+                    improve upon a no-augmentation baseline [2, 9]. This result is informative: it
+                    reveals an inherent tension in forecasting augmentation. The method must
+                    introduce sufficient <strong>diversity</strong>, so that the model observes
+                    variation beyond the raw training data, while simultaneously preserving
+                    <strong>temporal coherence</strong>, so that the augmented signal remains a
+                    valid continuous sequence. Reconciling these two requirements is what makes
+                    forecasting augmentation a distinctive and non-trivial problem.
+                </p>
+
+                <div class="callout">
+                    <strong>Core principle.</strong> An effective forecasting augmentation should
+                    modify the sequence enough to be useful, but not so much that the input and
+                    its future stop to be coherent.
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>Why classification-oriented augmentations struggle in forecasting</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    Many classical augmentation techniques&mdash;jittering, scaling, window
+                    warping, permutation&mdash;were originally designed for classification [11,
+                    12]. They perform well when a transformation leaves the label unchanged. In
+                    forecasting, however, the "label" is the subsequent segment of the sequence.
+                    Perturbing only the input, warping a portion of the signal, or distorting
+                    local timing too aggressively produces an input whose corresponding future is
+                    no longer plausible. Chen et al. [2] evaluated these methods systematically
+                    and concluded that they generally fail to outperform models trained without
+                    augmentation.
+                </p>
+
+                <p>
+                    Both the WaveMask/WaveMix work [8] and the TPS paper [13] emphasize the same
+                    point: forecasting demands a far stricter notion of input&ndash;target
+                    consistency than classification or anomaly detection. Randomness can be
+                    introduced, but it must be the <em>correct</em> kind of
+                    randomness&mdash;randomness that does not violate the temporal structure of
+                    the signal.
+                </p>
+
+                <!-- ======================================================== -->
+                <h3>Data&ndash;label coherence: a necessary requirement</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    Let the look-back window be \(x\) and the forecast target be \(y\). Training
+                    operates over the continuous sequence \(s = x \Vert y\), not over \(x\) in
+                    isolation. Consequently, augmentation should act on the concatenated sequence
+                    and only afterwards be partitioned into input and target:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    s = x \Vert y, \qquad \tilde{s} = \mathcal{A}(s), \qquad (\tilde{x},
+                    \tilde{y}) = \text{Split}(\tilde{s}).
+                    \]
+                </div>
+
+                <p>
+                    Although conceptually simple, this is one of the central ideas in forecasting
+                    augmentation. If augmentation is applied only to \(x\) while leaving \(y\)
+                    untouched, the natural continuity between input and target is broken. The TPS
+                    ablation studies [13] show that removing data&ndash;label coherence causes the
+                    largest performance degradation among all ablations considered.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/forecasting_pipeline.png"
+                        alt="Forecasting augmentation pipeline" />
+                    <p class="caption"><strong>Figure 1.</strong> The forecasting augmentation
+                        pipeline: the look-back window and forecast horizon are concatenated prior
+                        to augmentation and split afterwards, thereby preserving input&ndash;target
+                        alignment. (Figure adapted from [13].)</p>
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>A taxonomy of forecasting augmentation methods</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    In recent years, the strongest augmentation methods for forecasting have come
+                    primarily from the frequency domain, from signal decomposition, or from
+                    carefully controlled signal-level manipulation. A concise taxonomy is as
+                    follows:
+                </p>
+                <ul>
+                    <li><strong>Frequency-based:</strong> RobustTAD [3], FreqMask, FreqMix [2],
+                        WaveMask, WaveMix [8], Dominant Shuffle [9].</li>
+                    <li><strong>Decomposition-based:</strong> STAug [4].</li>
+                    <li><strong>Other methods:</strong> wDBA [6], MBB [7], Upsample [5].</li>
+                    <li><strong>Patch-based:</strong> TPS [13].</li>
+                </ul>
+
+                <p>
+                    The following sections review each family in turn, beginning with
+                    frequency-based methods, which have represented the dominant paradigm until
+                    recently.
+                </p>
+
+                <!-- ======================================================== -->
+                <h3>RobustTAD</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    One of the foundational approaches in frequency-domain augmentation is
+                    RobustTAD [3]. The method first applies the discrete Fourier transform to
+                    the concatenated input sequence and forecast target, then perturbs selected
+                    frequency segments before transforming the sequence back to the time
+                    domain. In practice, the spectrum is treated as a combination of real and
+                    imaginary components, from which amplitude and phase information are
+                    derived.
+                </p>
+
+                <p>
+                    Augmentation is performed by choosing a segment length proportionally to the
+                    full spectrum and modifying only those selected regions. In the
+                    amplitude-based version, the original magnitudes are replaced with values
+                    drawn from a Gaussian distribution controlled by a perturbation strength.
+                    In the phase-based version, the selected phase values are shifted by a small
+                    controlled perturbation. Although the original RobustTAD paper focused on
+                    anomaly detection, later forecasting studies [2, 4, 9] have adopted the
+                    magnitude-perturbation variant for multivariate time series forecasting, and
+                    our experiments also include phase perturbation.
+                </p>
+
+                <!-- ======================================================== -->
+                <h3>FreqMask and FreqMix</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    FreqMask and FreqMix [2] are among the most widely used frequency-domain
+                    augmentations for forecasting. Both begin by concatenating input and target
+                    and applying the real FFT:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    s = x \Vert y, \qquad S = \mathrm{rFFT}(s).
+                    \]
+                </div>
+
+                <p>
+                    FreqMask zeroes out selected frequency components via a binary mask \(M\):
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \text{FreqMask: } \tilde{S} = M \odot S, \qquad \tilde{s} = \mathrm{irFFT}(\tilde{S}).
+                    \]
+                </div>
+
+                <p>
+                    The underlying intuition is that suppressing selected periodic components
+                    encourages the model to be robust to their absence. FreqMix extends this idea
+                    by blending the spectra of two different sequences:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \text{FreqMix: } \tilde{S} = M \odot S_1 + (1-M) \odot S_2, \qquad \tilde{s} =
+                    \mathrm{irFFT}(\tilde{S}).
+                    \]
+                </div>
+
+                <p>
+                    This allows one sequence to partially adopt the structural characteristics of
+                    another. Both methods are conceptually clean and simple to implement.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/freq_mask_mix.png"
+                        alt="Frequency Masking and Frequency Mixing" />
+                    <p class="caption"><strong>Figure 2.</strong> FreqMask removes selected
+                        frequency components; FreqMix blends frequencies between two sequences.
+                        (Figure from [2].)</p>
+                </div>
+
+                <p class="small-note">
+                    A notable limitation is that both methods operate purely in the Fourier domain
+                    and therefore capture <em>which</em> frequencies are present, but not
+                    <em>where</em> those frequencies occur in time. This distinction proves to be
+                    important.
+                </p>
+
+                <!-- ======================================================== -->
+                <h3>Time&ndash;frequency localization: WaveMask and WaveMix</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    This limitation was the principal motivation for the WaveMask and WaveMix
+                    methods [8]. The Fourier transform provides excellent global frequency
+                    information but discards temporal localization. The Short-Time Fourier
+                    Transform (STFT) improves on this through local windows, but the window size
+                    is fixed. Wavelets are more flexible: they operate simultaneously at multiple
+                    resolutions, offering high temporal resolution for high-frequency events and
+                    high frequency resolution for low-frequency trends.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/wavelet_comp.png"
+                        style="width: 72%;"
+                        alt="Comparison of Fourier Transform, STFT, and Wavelet Transform" />
+                    <p class="caption"><strong>Figure 3.</strong> Time&ndash;frequency resolution
+                        comparison. The Fourier Transform has no time localization; the STFT uses
+                        fixed-size windows; the Wavelet Transform adapts its resolution across
+                        scales. (Figure adapted from [8, 16].)</p>
+                </div>
+
+                <p>
+                    A useful summary: the FFT describes <em>which frequencies exist</em>, whereas
+                    wavelets describe <em>which frequencies exist and approximately where they
+                        occur</em>. For time series data, where local changes frequently carry
+                    critical information, this additional localization is highly valuable.
+                </p>
+
+                <p>
+                    In WaveMask/WaveMix [8], the signal is decomposed via the discrete wavelet
+                    transform (DWT) into approximation and detail coefficients across multiple
+                    levels. Augmentation then operates directly on those coefficients:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    s = x \Vert y, \qquad W = \mathrm{WaveDec}(s) = \{W^{(1)}, W^{(2)}, \dots,
+                    W^{(L+1)}\}.
+                    \]
+                    \[
+                    \text{WaveMask: } \tilde{W}^{(\ell)} = M^{(\ell)} \odot W^{(\ell)}, \qquad
+                    \tilde{s} = \mathrm{WaveRec}(\tilde{W}).
+                    \]
+                    \[
+                    \text{WaveMix: } \tilde{W}^{(\ell)} = M^{(\ell)} \odot W_1^{(\ell)} + (1 -
+                    M^{(\ell)}) \odot W_2^{(\ell)}, \qquad \tilde{s} = \mathrm{WaveRec}(\tilde{W}).
+                    \]
+                </div>
+
+                <p>
+                    An important advantage is that masking and mixing can be applied independently
+                    at each decomposition level, so fine-scale detail and coarse-scale trends need
+                    not be treated identically. In the reported experiments, WaveMask and WaveMix
+                    outperform all baselines in 12 out of 16 forecasting horizon settings and rank
+                    second in the remaining four [8].
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/wavemask.png" alt="WaveMask pipeline" />
+                    <p class="caption"><strong>Figure 4.</strong> WaveMask pipeline: the signal is
+                        decomposed via DWT, wavelet coefficients are selectively masked at each
+                        level, and the signal is reconstructed via inverse DWT. (Figure from [8].)
+                    </p>
+                </div>
+
+                <div class="figure">
+                    <img src="/blogs/images/wavemix.png" style="width: 88%;"
+                        alt="WaveMix pipeline" />
+                    <p class="caption"><strong>Figure 5.</strong> WaveMix pipeline: two signals
+                        are decomposed, their wavelet coefficients are exchanged via complementary
+                        masks, and the blended coefficients are reconstructed. (Figure from [8].)
+                    </p>
+                </div>
+
+                <div class="resource-box">
+                    <span class="resource-label">Wave-Mask/Mix [8]:</span>
+                    <span><i class="fas fa-file-pdf"></i><a
+                            href="https://arxiv.org/abs/2408.10951" target="_blank">arXiv:2408.10951</a></span>
+                    <span><i class="fab fa-github"></i><a
+                            href="https://github.com/jafarbakhshaliyev/Wave-Augs"
+                            target="_blank">Code</a></span>
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>Dominant Shuffle</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    Dominant Shuffle [9] adopts a more targeted approach to frequency-domain
+                    augmentation. Rather than masking or mixing arbitrary spectral components, it
+                    identifies the most dominant frequencies and shuffles them prior to
+                    reconstruction:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    S = \mathrm{FFT}(s), \qquad \Omega_k = \text{indices of top-}k\text{ dominant
+                    frequencies},
+                    \]
+                    \[
+                    \tilde{S}_{\Omega_k} = \mathrm{Shuffle}(S_{\Omega_k}), \qquad \tilde{s} =
+                    \mathrm{IFFT}(\tilde{S}).
+                    \]
+                </div>
+
+                <p>
+                    The underlying motivation is to avoid perturbing the entire spectrum too
+                    aggressively, which risks pushing augmented samples out of
+                    distribution&mdash;an issue discussed at length in the original paper. That
+                    said, in the unified comparisons reported in the TPS paper [13], Dominant
+                    Shuffle is not the strongest method overall.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/dominant_shuffle.png" alt="Dominant Shuffle" />
+                    <p class="caption"><strong>Figure 6.</strong> Dominant Shuffle: the top-\(k\)
+                        dominant frequency components are identified and shuffled, while the rest
+                        of the spectrum is left unchanged. (Figure from [9].)</p>
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>STAug</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    STAug [4] originates from the decomposition-based family. It applies Empirical
+                    Mode Decomposition (EMD) to two sequences, yielding intrinsic mode functions
+                    (IMFs), and then recombines them using mixup-style interpolation weights drawn
+                    from a uniform distribution. The result is a new sequence that blends the
+                    temporal characteristics of both inputs.
+                </p>
+
+                <p>
+                    Conceptually, STAug offers an elegant mechanism for producing diverse yet
+                    coherent samples. Its main practical limitation is computational cost: EMD is
+                    memory-intensive, particularly on larger datasets. In the TPS experiments
+                    [13], STAug could not be evaluated on the ECL and Traffic datasets due to GPU
+                    memory constraints&mdash;a limitation also acknowledged in the original STAug
+                    paper [4].
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/staug.png" alt="STAug" />
+                    <p class="caption"><strong>Figure 7.</strong> STAug decomposes two sequences
+                        via EMD into intrinsic mode functions (IMFs) and recombines them via
+                        interpolation weights. (Figure from [4].)</p>
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>wDBA, MBB, and Upsample</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    These three methods are worth mentioning because they illustrate the breadth
+                    of the forecasting augmentation landscape beyond frequency-based approaches.
+                </p>
+                <ul>
+                    <li><strong>wDBA</strong> [6] constructs new samples by averaging time series
+                        under DTW-based alignment. It produces clean synthetic data but carries
+                        substantial computational cost.</li>
+                    <li><strong>MBB</strong> [7] decomposes a series into trend, seasonal, and
+                        remainder components via STL, then bootstraps blocks from the remainder to
+                        generate new sequences.</li>
+                    <li><strong>Upsample</strong> [5] selects a consecutive segment and stretches
+                        it back to the original length using linear interpolation, acting as a
+                        magnifying-glass-like view of local structure.</li>
+                </ul>
+
+                <p>
+                    Upsample is notable for consistently ranking among the stronger non-frequency
+                    baselines and often providing a competitive benchmark. Across the broader
+                    evaluation in the TPS paper [13], however, TPS performs better overall.
+                </p>
+
+                <hr class="section-divider" />
+
+                <!-- ======================================================== -->
+                <h3>From image patches to temporal patches</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    Patch-based augmentation is a well-established tool in computer vision.
+                    Methods such as PatchShuffle [14] and PatchMix [15] divide an image into
+                    patches, apply shuffling or mixing, and reassemble the image. These methods
+                    exploit the spatial redundancy of images: local pixel rearrangements within
+                    patches generally preserve the overall scene.
+                </p>
+
+                <p>
+                    Time series are fundamentally different. They are sequential in nature, and
+                    the order of values carries meaning at every scale. Naively cutting a sequence
+                    into non-overlapping chunks and shuffling them would create hard boundaries,
+                    visible discontinuities, and input&ndash;target misalignment. Transferring the
+                    patch-based idea to the temporal domain therefore requires careful rethinking
+                    of each step.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/patchshuffle.png"
+                        style="width: 88%;"
+                        alt="PatchShuffle in computer vision" />
+                    <p class="caption"><strong>Figure 8.</strong> PatchShuffle in computer vision:
+                        a 4&times;4 image is partitioned into non-overlapping 2&times;2 patches,
+                        and pixels within each patch are independently shuffled. (Figure adapted
+                        from [13] and [14].)</p>
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>Temporal Patch Shuffle (TPS)</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    TPS [13] is the method developed to address these challenges. Its core
+                    procedure is as follows. Given the full sequence (the concatenation of
+                    look-back window and forecast horizon), TPS extracts overlapping temporal
+                    patches, computes a variance-based score for each patch, selectively shuffles
+                    a subset of patches&mdash;prioritizing low-variance patches&mdash;and
+                    reconstructs the sequence by averaging over the overlapping regions.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/tps.png"
+                        alt="Temporal Patch Shuffle pipeline" />
+                    <p class="caption"><strong>Figure 9.</strong> TPS pipeline. The input sequence
+                        is partitioned into overlapping patches (Temporal Patching); a subset is
+                        reordered according to variance scores (Variance-Aware Shuffling); and the
+                        sequence is reconstructed by averaging overlapping regions
+                        (Reconstruction). (Figure from [13].)</p>
+                </div>
+
+                <h4>Procedure</h4>
+
+                <p>
+                    The full procedure, as specified in the paper [13], consists of the following
+                    steps:
+                </p>
+                <ol>
+                    <li><strong>Concatenate.</strong> Join the look-back window and forecast
+                        horizon into a single continuous sequence. This enforces data&ndash;label
+                        coherence from the outset.</li>
+                    <li><strong>Temporal Patching.</strong> Extract overlapping patches using
+                        patch length \(p\) and stride \(s\). Overlap is essential: neighboring
+                        patches share time steps, which smooths transitions during reconstruction.
+                    </li>
+                    <li><strong>Variance scoring.</strong> Compute the variance of each patch
+                        across all channels in the normalized input space. Low-variance patches
+                        are treated as <em>safer</em> to perturb, as they contain less distinctive
+                        structure&mdash;a conservative heuristic.</li>
+                    <li><strong>Selective shuffling.</strong> Select the fraction \(\alpha\) of
+                        lowest-variance patches and randomly permute their positions; the
+                        remaining patches are left untouched.</li>
+                    <li><strong>Reconstruction.</strong> Place each patch back at its (possibly
+                        new) temporal position and average over overlapping regions. Averaging
+                        serves as a natural smoothing mechanism that softens any discontinuities
+                        introduced by shuffling.</li>
+                    <li><strong>Split.</strong> Separate the reconstructed sequence back into
+                        augmented input and augmented target.</li>
+                </ol>
+
+                <p>
+                    Formally, the algorithm is as follows [13]:
+                </p>
+
+                <div class="algorithm">
+                    <div class="algo-title">Algorithm 1: Temporal Patch Shuffle (TPS)</div>
+                    <div class="algo-header">
+                        <strong>Require:</strong> look-back window <em>L</em>, forecast horizon
+                        <em>F</em>, patch length <em>p</em>, stride <em>s</em>, shuffle rate
+                        \(\alpha\)<br />
+                        <strong>Ensure:</strong> augmented sequence <em>S</em>
+                    </div>
+                    <ol>
+                        <li><em>X</em> &larr; [<em>L</em>, <em>F</em>] &nbsp;&nbsp;<span
+                                class="comment"># <em>X</em> &isin; &#8477;<sup>B&times;T&times;C</sup></span>
+                        </li>
+                        <li><em>P</em> &larr; <span class="keyword">Unfold</span>(<em>X</em>,
+                            <em>p</em>, <em>s</em>) &nbsp;&nbsp;<span class="comment">#
+                                <em>P</em> &isin; &#8477;<sup>B&times;N<sub>p</sub>&times;C&times;p</sup></span>
+                        </li>
+                        <li>Score &larr; <span class="keyword">Var</span>(<em>P</em>)
+                            &nbsp;&nbsp;<span class="comment">#
+                                &#8477;<sup>B&times;N<sub>p</sub></sup></span></li>
+                        <li><em>N<sub>s</sub></em> &larr;
+                            &lfloor;\(\alpha\)<em>N<sub>p</sub></em>&rfloor;</li>
+                        <li><span class="keyword">for</span> <em>b</em> = 0 <span
+                                class="keyword">to</span> <em>B</em> &minus; 1 <span
+                                class="keyword">do</span></li>
+                        <li>&nbsp;&nbsp;&nbsp;&nbsp;<em>I<sub>b</sub></em> &larr; <span
+                                class="keyword">Argsort</span>(Score[<em>b</em>, :])[0 :
+                            <em>N<sub>s</sub></em>]</li>
+                        <li>&nbsp;&nbsp;&nbsp;&nbsp;\(\pi_b\) &larr; <span
+                                class="keyword">RandPerm</span>(<em>N<sub>s</sub></em>)</li>
+                        <li>&nbsp;&nbsp;&nbsp;&nbsp;<em>P<sub>b</sub></em>[<em>I<sub>b</sub></em>]
+                            &larr;
+                            <em>P<sub>b</sub></em>[<em>I<sub>b</sub></em>][\(\pi_b\)]</li>
+                        <li><span class="keyword">end for</span></li>
+                        <li>\(\tilde{P}\) &larr; <em>P</em> &nbsp;&nbsp;<span
+                                class="comment"># shuffled patch tensor</span></li>
+                        <li><em>S</em> &larr; <span
+                                class="keyword">Reconstruct</span>(\(\tilde{P}\))</li>
+                    </ol>
+                </div>
+
+                <p>
+                    Three hyperparameters control the method: the patch length \(p\), the stride
+                    \(s\), and the shuffle rate \(\alpha\). In practice, these are selected
+                    through a validation-based search over a predefined set of candidate
+                    combinations (approximately 20 configurations), rather than a full Cartesian
+                    grid [13].
+                </p>
+
+                <!-- ======================================================== -->
+                <h3>Ablation findings</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    The ablation studies in the TPS paper [13] isolate the contribution of each
+                    design choice. The findings, roughly ordered by importance, are as follows.
+                </p>
+                <ul>
+                    <li><strong>Data&ndash;label coherence matters the most.</strong> Applying
+                        augmentation only to the input while leaving the target unchanged causes
+                        the largest performance drop of any single ablation. This empirically
+                        confirms the central thesis: in forecasting, input and target must be
+                        transformed jointly.</li>
+                    <li><strong>Overlap matters substantially.</strong> Replacing overlapping
+                        patches with non-overlapping ones leads to a clear degradation. Overlap is
+                        the mechanism that preserves local temporal structure under shuffling.
+                    </li>
+                    <li><strong>Variance-based ordering provides a modest improvement.</strong>
+                        Its effect is smaller than overlap, but it remains a useful refinement
+                        when only a subset of patches is shuffled. When \(\alpha = 1.0\) (all
+                        patches shuffled), variance ordering becomes irrelevant by construction.
+                    </li>
+                    <li><strong>The time domain outperforms the frequency domain.</strong> A
+                        variant that applies the same patch operations after an FFT transform also
+                        degrades results, indicating that TPS is most effective when operating
+                        directly on the raw time-domain signal.</li>
+                    <li><strong>Higher shuffle rates tend to help.</strong> In the sensitivity
+                        study, values in the range 0.7&ndash;1.0 consistently yield the strongest
+                        results across datasets.</li>
+                </ul>
+
+                <div class="note">
+                    The central message of the ablations is that forecasting augmentation is not
+                    merely about injecting randomness. It is about injecting <em>controlled</em>
+                    randomness&mdash;randomness that respects the structure of the signal.
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>Main results</h3>
+                <!-- ======================================================== -->
+
+                <h4>Long-term forecasting</h4>
+
+                <p>
+                    TPS was evaluated on nine long-term forecasting datasets using five recent
+                    backbone families: TSMixer, DLinear, PatchTST, TiDE, and LightTS. Across all
+                    backbones, TPS achieves the best average MSE among the compared augmentation
+                    methods [13]. The figure below summarizes the comparison.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/longterm.png"
+                        alt="Long-term forecasting results across nine datasets and five backbones" />
+                    <p class="caption"><strong>Figure 10.</strong> Long-term forecasting results
+                        across nine datasets and five backbones. TPS achieves the best average MSE
+                        and the highest number of wins for every backbone. Across the five
+                        backbones, relative MSE improvements over the best competing augmentation
+                        range from 2.08% to 10.51%. (Results from [13]; see the paper for
+                        per-dataset tables.)</p>
+                </div>
+
+                <p>
+                    The improvement for LightTS (10.51%) is the largest, but the broader narrative
+                    is one of consistency: TPS does not rely on a single favorable backbone or
+                    dataset. It yields gains across architectures ranging from linear models
+                    (DLinear, LightTS) to MLP-based designs (TSMixer, TiDE) and transformer-style
+                    models (PatchTST).
+                </p>
+
+                <h4>Short-term traffic forecasting</h4>
+
+                <p>
+                    TPS was further evaluated on four short-term traffic datasets (PeMS-03, 04,
+                    07, 08) using PatchTST, again achieving the strongest overall augmentation
+                    performance [13].
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/shortterm.png"
+                        alt="Short-term traffic forecasting results on PeMS datasets" />
+                    <p class="caption"><strong>Figure 11.</strong> Short-term traffic forecasting
+                        results with PatchTST on PeMS-{03, 04, 07, 08}. TPS achieves MSE
+                        improvements of 7.14%, 2.34%, 0.00%, and 4.26% respectively over the best
+                        competing augmentation. Even where the gain is small (PeMS07), TPS does
+                        not degrade performance. (Results from [13].)</p>
+                </div>
+
+                <p>
+                    Stability matters as much as peak performance: a good augmentation method
+                    should not behave like a lottery ticket, producing large gains on some
+                    datasets and substantial losses on others.
+                </p>
+
+                <h4>Extension to time series classification</h4>
+
+                <p>
+                    One particularly appealing aspect of TPS is how naturally it transfers to
+                    classification. Since classification tasks do not have a forecast horizon,
+                    only two modifications are required: operate on the input sequence \(X\)
+                    directly (without concatenation), and apply shuffling at the sample level
+                    rather than the batch level. With these minimal changes, TPS achieves the best
+                    average accuracy among compared augmentation methods on both univariate (UCR)
+                    and multivariate (UEA) benchmarks [13].
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/classification.png"
+                        alt="Classification results on UCR and UEA benchmarks" />
+                    <p class="caption"><strong>Figure 12.</strong> Classification results. On 30
+                        UCR univariate datasets (MiniRocket), TPS improves accuracy by 0.50% over
+                        the best competing method, with top-2 placement on 50% of datasets. On 10
+                        UEA multivariate datasets (MultiRocket), TPS improves accuracy by 1.10%,
+                        with top-2 placement on 60% of datasets. (Results from [13].)</p>
+                </div>
+
+                <p>
+                    This provides encouraging evidence that the core patch-based idea generalizes
+                    beyond forecasting.
+                </p>
+
+                <!-- ======================================================== -->
+                <h3>Summary</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    Taken together, TPS stands out for a combination of reasons. It avoids
+                    expensive decomposition steps, does not indiscriminately alter the entire
+                    spectrum, and does not break the input&ndash;target relationship. Instead, it
+                    modifies the sequence in a controlled manner, with overlap and averaging
+                    preserving local temporal structure and data&ndash;label coherence keeping
+                    input and target aligned.
+                </p>
+
+                <p>
+                    Across evaluations, TPS achieves state-of-the-art augmentation performance on
+                    long-term forecasting (nine datasets, five backbones), short-term forecasting
+                    (four PeMS traffic datasets), and time series classification (UCR and UEA
+                    benchmarks). This breadth across tasks and architectures is what makes the
+                    approach particularly promising.
+                </p>
+
+                <div class="resource-box">
+                    <span class="resource-label">Temporal Patch Shuffle (TPS) [13]:</span>
+                    <span><i class="fas fa-file-pdf"></i><a
+                            href="https://arxiv.org/abs/2604.09067"
+                            target="_blank">arXiv:2604.09067</a></span>
+                    <span><i class="fab fa-github"></i><a
+                            href="https://github.com/jafarbakhshaliyev/TPS"
+                            target="_blank">Code</a></span>
+                </div>
+
+                <!-- ======================================================== -->
+                <h3>Future directions</h3>
+                <!-- ======================================================== -->
+
+                <p>
+                    The TPS paper [13] outlines several directions for future work:
+                </p>
+                <ul>
+                    <li><strong>Broader backbone coverage.</strong> Evaluating TPS with additional
+                        model families, including Graph Neural Networks and Spiking Neural
+                        Networks, as well as newer foundation-model settings under lightweight
+                        adaptation protocols such as frozen-backbone fine-tuning.</li>
+                    <li><strong>More expressive patch-importance criteria.</strong> Replacing the
+                        variance-based ordering with channel-aware or weighted multivariate
+                        scoring, which could better reflect the relative informativeness of
+                        patches in high-dimensional settings.</li>
+                    <li><strong>Cold-start forecasting.</strong> Evaluating TPS in low-data
+                        regimes, where only a small fraction (e.g., 10% or 20%) of the training
+                        data is available&mdash;a setting explored in prior work [2].</li>
+                    <li><strong>Standardized benchmark suites.</strong> Applying TPS to
+                        standardized long-horizon benchmarks such as GIFT-Eval, to further
+                        stress-test the method in large-scale evaluations.</li>
+                </ul>
+
+                <p>
+                    As a preliminary indication of the first point, the TPS paper additionally
+                    reports results on CycleNet&mdash;a recent state-of-the-art forecasting
+                    backbone&mdash;where TPS also outperforms all competing augmentation methods,
+                    with a 1.74% improvement over the second-best method on ETTh1.
+                </p>
+
+                <hr class="section-divider" />
+
+                <!-- ======================================================== -->
+                <h3>References</h3>
+                <!-- ======================================================== -->
+                <ol class="bib">
+                    <li id="ref1">Wen, Q., Sun, L., Yang, F., Song, X., Gao, J., Wang, X., Xu, H.
+                        (2021). <em>Time Series Data Augmentation for Deep Learning: A Survey</em>.
+                        IJCAI 2021.</li>
+                    <li id="ref2">Chen, M., Xu, Z., Zeng, A., Xu, Q. (2023). <em>FrAug: Frequency
+                            Domain Augmentation for Time Series Forecasting</em>. <a
+                            href="https://arxiv.org/abs/2302.09292"
+                            target="_blank">arXiv:2302.09292</a>.</li>
+                    <li id="ref3">Gao, J., Song, X., Wen, Q., Wang, P., Sun, L., Xu, H. (2021).
+                        <em>RobustTAD: Robust Time Series Anomaly Detection via Decomposition and
+                            Convolutional Neural Networks</em>. <a
+                            href="https://arxiv.org/abs/2002.09545"
+                            target="_blank">arXiv:2002.09545</a>.
+                    </li>
+                    <li id="ref4">Zhang, X., Chowdhury, R. R., Shang, J., Gupta, R., Hong, D.
+                        (2023). <em>Towards Diverse and Coherent Augmentation for Time-Series
+                            Forecasting</em>. <a href="https://arxiv.org/abs/2303.14254"
+                            target="_blank">arXiv:2303.14254</a>.</li>
+                    <li id="ref5">Semenoglou, A.-A., Spiliotis, E., Assimakopoulos, V. (2023).
+                        <em>Data Augmentation for Univariate Time Series Forecasting with Neural
+                            Networks</em>. Pattern Recognition, 134:109132.
+                    </li>
+                    <li id="ref6">Forestier, G., Petitjean, F., Dau, H. A., Webb, G. I., Keogh, E.
+                        (2017). <em>Generating Synthetic Time Series to Augment Sparse
+                            Datasets</em>. IEEE ICDM 2017.</li>
+                    <li id="ref7">Bandara, K., Hewamalage, H., Liu, Y.-H., Kang, Y., Bergmeir, C.
+                        (2021). <em>Improving the Accuracy of Global Forecasting Models Using Time
+                            Series Data Augmentation</em>. Pattern Recognition, 120:108148.</li>
+                    <li id="ref8">Arabi, D., Bakhshaliyev, J., Coskuner, A., Madhusudhanan, K.,
+                        Uckardes, K. S. (2024). <em>Wave-Mask/Mix: Exploring Wavelet-Based
+                            Augmentations for Time Series Forecasting</em>. <a
+                            href="https://arxiv.org/abs/2408.10951"
+                            target="_blank">arXiv:2408.10951</a>.</li>
+                    <li id="ref9">Zhao, K., He, Z., Hung, A., Zeng, D. (2024). <em>Dominant
+                            Shuffle: A Simple Yet Powerful Data Augmentation for Time-Series
+                            Prediction</em>. <a href="https://arxiv.org/abs/2405.16456"
+                            target="_blank">arXiv:2405.16456</a>.</li>
+                    <li id="ref10">Iwana, B. K., Uchida, S. (2021). <em>An Empirical Survey of
+                            Data Augmentation for Time Series Classification with Neural
+                            Networks</em>. PLOS ONE, 16(7):1&ndash;32.</li>
+                    <li id="ref11">Um, T. T., Pfister, F. M. J., et al. (2017). <em>Data
+                            Augmentation of Wearable Sensor Data for Parkinson's Disease Monitoring
+                            Using Convolutional Neural Networks</em>. ICMI 2017.</li>
+                    <li id="ref12">Le Guennec, A., Malinowski, S., Tavenard, R. (2016). <em>Data
+                            Augmentation for Time Series Classification Using Convolutional Neural
+                            Networks</em>. ECML/PKDD Workshop.</li>
+                    <li id="ref13">Bakhshaliyev, J., Burchert, J., Landwehr, N., Schmidt-Thieme,
+                        L. (2026). <em>Temporal Patch Shuffle (TPS): Leveraging Patch-Level
+                            Shuffling to Boost Generalization and Robustness in Time Series
+                            Forecasting</em>. <a href="https://arxiv.org/abs/2604.09067"
+                            target="_blank">arXiv:2604.09067</a>.</li>
+                    <li id="ref14">Kang, G., Dong, X., Zheng, L., Yang, Y. (2017). <em>PatchShuffle
+                            Regularization</em>. <a href="https://arxiv.org/abs/1707.07103"
+                            target="_blank">arXiv:1707.07103</a>.</li>
+                    <li id="ref15">Hong, Y., Chen, Y. (2024). <em>PatchMix: Patch-Level Mixup for
+                            Data Augmentation in Convolutional Neural Networks</em>. Knowledge and
+                        Information Systems, 66:3855&ndash;3881.</li>
+                    <li id="ref16">Gabry, M. A., Eltaleb, I., Soliman, M. Y., Farouq-Ali, S. M.
+                        (2023). <em>A new technique for estimating stress from fracture injection
+                            tests using continuous wavelet transform</em>. Energies, 16(2), 764.
+                        <a href="https://www.mdpi.com/1996-1073/16/2/764"
+                            target="_blank">https://www.mdpi.com/1996-1073/16/2/764</a>.</li>
+                </ol>
+
+                <hr class="section-divider" />
+
+                <!-- ======================================================== -->
+                <h3>Comments</h3>
+                <!-- ======================================================== -->
+                <div id="disqus_thread"></div>
+                <script>
+                    var disqus_config = function () {
+                        this.page.url = window.location.origin + '/blogs/data-augmentation-time-series-forecasting.html';
+                        this.page.identifier = 'data-augmentation-time-series-forecasting-tps';
+                    };
+                    (function () {
+                        var d = document;
+                        var s = d.createElement('script');
+                        s.src = 'https://https-jafarbakhshaliyev-github-io.disqus.com/embed.js';
+                        s.setAttribute('data-timestamp', +new Date());
+                        (d.head || d.body).appendChild(s);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view comments powered by Disqus.</noscript>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <ul class="icons">
+                <li><a href="mailto:jafar.bakhshaliyev@gmail.com" class="icon solid fa-envelope"><span
+                            class="label">Email</span></a></li>
+                <li><a href="https://www.linkedin.com/in/jafarbakhshaliyev/"
+                        class="icon brands fa-linkedin" target="_blank"><span
+                            class="label">LinkedIn</span></a></li>
+                <li><a href="https://scholar.google.com/citations?user=hOG05K8AAAAJ&hl=en"
+                        class="icon solid fa-graduation-cap" target="_blank"><span class="label">Google
+                            Scholar</span></a></li>
+                <li><a href="https://github.com/jafarbakhshaliyev"
+                        class="icon brands fa-github" target="_blank"><span
+                            class="label">GitHub</span></a></li>
+                <li><a href="https://twitter.com/JafarBakhshali1"
+                        class="icon brands fa-x-twitter" target="_blank"><span
+                            class="label">Twitter</span></a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; 2026 Jafar Bakhshaliyev</li>
+            </ul>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var pageUrl = encodeURIComponent(window.location.href);
+            var pageTitle = encodeURIComponent(document.title);
+            var shareText = encodeURIComponent('Check out this blog post: ' + document.title);
+
+            var shareLinks = {
+                x: 'https://twitter.com/intent/tweet?text=' + pageTitle + '&url=' + pageUrl,
+                linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=' + pageUrl,
+                facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + pageUrl,
+                reddit: 'https://www.reddit.com/submit?url=' + pageUrl + '&title=' + pageTitle,
+                whatsapp: 'https://wa.me/?text=' + shareText + '%20' + pageUrl,
+                telegram: 'https://t.me/share/url?url=' + pageUrl + '&text=' + shareText,
+                email: 'mailto:?subject=' + pageTitle + '&body=' + shareText + '%0A%0A' + pageUrl
+            };
+
+            var shareButtons = document.querySelectorAll('.share-box [data-share]');
+
+            shareButtons.forEach(function (button) {
+                var shareType = button.getAttribute('data-share');
+
+                if (shareType === 'copy') {
+                    button.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        var copyText = window.location.href;
+
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            navigator.clipboard.writeText(copyText).then(function () {
+                                button.classList.add('copied');
+                                setTimeout(function () {
+                                    button.classList.remove('copied');
+                                }, 1200);
+                            });
+                        }
+                    });
+                    return;
+                }
+
+                if (shareLinks[shareType]) {
+                    button.href = shareLinks[shareType];
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>
