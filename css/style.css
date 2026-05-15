@@ -1992,13 +1992,13 @@ body {
 .paper-thumb {
 	order: 1;
 	border-radius: 6px;
-	overflow: hidden;
 	height: 180px;
 	background: transparent;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 0;
+	position: relative;
 }
 
 .paper-thumb img {
@@ -2006,8 +2006,23 @@ body {
 	height: 100%;
 	object-fit: contain;
 	display: block;
-	border: 1px solid #f1f4f8;
+	border: 2px dashed #999;
 	border-radius: 6px;
+	padding: 4px;
+}
+
+.venue-badge {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	background-color: #007bff;
+	color: #fff;
+	padding: 3px 8px;
+	font-size: 0.75rem;
+	font-weight: 700;
+	border-radius: 4px;
+	z-index: 10;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .paper-content {
