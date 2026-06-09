@@ -15,7 +15,7 @@
 
 
 body {
-	background: #fff;
+	background: #f9f9f9;
 	height: 100%;
 	margin: 0;
 	display: flex;
@@ -36,11 +36,11 @@ body {
 	}
 
 	body, input, select, textarea {
-		color: #666;
-		font-size: 13pt;
+		color: #333;
+		font-size: 14pt;
 		font-family: "Open Sans", sans-serif;
 		font-weight: 200;
-		line-height: 2em;
+		line-height: 1.8em;
 	}
 
 	/* blogs/index.html */
@@ -259,8 +259,8 @@ body {
 	}
 
 	h1, h2, h3, h4, h5, h6 {
-		color: #484848;
-		font-weight: 700;
+		color: #222;
+		font-weight: 600;
 		line-height: 1em;
 		margin: 0 0 1em 0;
 		text-transform: uppercase;
@@ -1087,7 +1087,7 @@ body {
 		justify-content: space-between;
 		align-items: center;
 		box-sizing: border-box;
-		padding: 0 4em 0 1.25em;
+		padding: 0 3em 0 3em;
 	}
 
 		#header h1 {
