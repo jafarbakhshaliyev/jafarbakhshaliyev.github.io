@@ -125,6 +125,15 @@ body {
 		color: #5f6670;
 	}
 
+	.blog-date {
+		display: inline-block;
+		font-family: "Open Sans", sans-serif;
+		font-size: 0.78em;
+		color: #999;
+		letter-spacing: 0.04em;
+		margin-bottom: 0.45rem;
+	}
+
 	/* blogs/index.html end here*/
 
 	

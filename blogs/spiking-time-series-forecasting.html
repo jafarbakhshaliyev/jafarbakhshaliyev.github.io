@@ -1,0 +1,1289 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Spiking Time Series Forecasting: From Neurons to Fourier Graph Operators | Jafar Bakhshaliyev</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description"
+        content="A blog post on spiking neural networks for time series forecasting, covering neuron dynamics, temporal alignment, Spike-RNN/TCN/Transformer models, CPG positional encoding, TS-LIF, SpikF, and SpikF-GO." />
+    <meta name="keywords" content="spiking neural networks, time series forecasting, SNN, LIF, CPG, TS-LIF, SpikF, SpikF-GO, Fourier Graph Operators" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <noscript>
+        <link rel="stylesheet" href="/css/style.css" />
+        <link rel="stylesheet" href="/css/skel.css" />
+        <link rel="stylesheet" href="/css/style-xlarge.css" />
+    </noscript>
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Raleway:500,700">
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700">
+    <script src="https://kit.fontawesome.com/7c0ff2a316.js" crossorigin="anonymous"></script>
+    <!--[if lte IE 8]><script src="/js/html5shiv.js"></script><![endif]-->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/skel-layers.min.js"></script>
+    <script src="/js/init.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)'], ['$', '$']], displayMath: [['\\[', '\\]']] }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .blogwrapper {
+            padding-top: 5em;
+            padding-bottom: 4em;
+        }
+
+        .blogheader h2 {
+            margin-bottom: 0.25em;
+        }
+
+        .blog {
+            display: block;
+            text-align: left;
+            font-size: 1rem;
+            line-height: 1.9;
+            color: #2b2b2b;
+        }
+
+        .blog p {
+            margin-bottom: 1.15em;
+        }
+
+        .blog h3 {
+            margin-top: 2.25em;
+            margin-bottom: 0.8em;
+            color: #1f2a44;
+        }
+
+        .blog h4 {
+            margin-top: 1.6em;
+            margin-bottom: 0.5em;
+            color: #2f3f64;
+        }
+
+        .blog .lead {
+            font-size: 1.08rem;
+            color: #404040;
+        }
+
+        .blog .figure {
+            margin: 1.8em 0 2.2em 0;
+            text-align: center;
+            background: #fcfdff;
+            border: 1px solid #e4e9f2;
+            border-radius: 12px;
+            padding: 1rem 1rem 0.9rem 1rem;
+            box-shadow: 0 10px 28px rgba(31, 42, 68, 0.06);
+        }
+
+        .blog .figure img {
+            width: 100%;
+            max-width: 920px;
+            max-height: 72vh;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid #e2e6ef;
+            background: #fafbfd;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .blog .figure .placeholder {
+            width: 100%;
+            max-width: 920px;
+            min-height: 260px;
+            margin: 0 auto;
+            border-radius: 8px;
+            border: 1px dashed #bfc9dc;
+            background: #fafbfd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7a99;
+            font-size: 0.95rem;
+        }
+
+        .blog .caption {
+            margin-top: 0.7em;
+            font-size: 0.94rem;
+            color: #666;
+        }
+
+        .blog .note,
+        .blog .callout {
+            background: #f7f9fc;
+            border-left: 4px solid #6d84b4;
+            padding: 1em 1.1em;
+            margin: 1.4em 0;
+            border-radius: 6px;
+        }
+
+        .blog .small-note {
+            font-size: 0.93rem;
+            color: #555;
+        }
+
+        .blog code,
+        .blog pre {
+            font-family: Consolas, Monaco, monospace;
+        }
+
+        .blog pre {
+            background: #fbfbfc;
+            border: 1px solid #eceff5;
+            padding: 1em;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 1.4em;
+        }
+
+        .blog ul,
+        .blog ol {
+            margin: 0 0 1.2em 1.2em;
+        }
+
+        .blog .equation-block {
+            background: #fbfbfd;
+            border: 1px solid #eceef5;
+            border-radius: 6px;
+            padding: 1em 1.2em;
+            margin: 1em 0 1.4em 0;
+            overflow-x: auto;
+        }
+
+        .blog .bib li {
+            margin-bottom: 0.7em;
+        }
+
+        .blog .links a,
+        .blog .bib a {
+            word-break: break-word;
+        }
+
+        .blog .section-divider {
+            margin: 2.8em 0 1.2em 0;
+            border: 0;
+            border-top: 1px solid #ebedf2;
+        }
+
+        .blog .resource-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6em 1.1em;
+            align-items: center;
+            background: linear-gradient(180deg, #f6f9ff 0%, #eff4ff 100%);
+            border: 1px solid #d9e2f5;
+            border-left: 4px solid #4a6db0;
+            border-radius: 8px;
+            padding: 0.9em 1.2em;
+            margin: 1.4em 0 1.8em 0;
+            font-size: 0.97rem;
+        }
+
+        .blog .resource-box .resource-label {
+            font-weight: 700;
+            color: #2f3f64;
+            margin-right: 0.3em;
+        }
+
+        .blog .resource-box a {
+            color: #2f4a8a;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(47, 74, 138, 0.35);
+        }
+
+        .blog .resource-box a:hover {
+            color: #1f2a44;
+            border-bottom-color: #1f2a44;
+        }
+
+        .blog .resource-box i {
+            color: #4a6db0;
+            margin-right: 0.3em;
+        }
+
+        .blog table.result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.2em 0 1.8em 0;
+            font-size: 0.92rem;
+            background: #ffffff;
+            border: 1px solid #e2e6ef;
+        }
+
+        .blog table.result-table th,
+        .blog table.result-table td {
+            border: 1px solid #e2e6ef;
+            padding: 0.55em 0.65em;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .blog table.result-table th {
+            background: #f4f7fc;
+            color: #1f2a44;
+            font-weight: 700;
+        }
+
+        .blog table.result-table td.left,
+        .blog table.result-table th.left {
+            text-align: left;
+        }
+
+        .blog .draft-note {
+            background: #fffaf2;
+            border-left: 4px solid #c9973f;
+            padding: 0.9em 1.1em;
+            margin: 1.2em 0 1.5em 0;
+            border-radius: 6px;
+            color: #534226;
+        }
+
+        .blog .share-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55em;
+            align-items: center;
+            background: linear-gradient(180deg, #f7faff 0%, #eef4ff 100%);
+            border: 1px solid #dbe4f4;
+            border-left: 4px solid #5b78b8;
+            border-radius: 8px;
+            padding: 0.9em 1.1em;
+            margin: 1.1em 0 1.6em 0;
+        }
+
+        .blog .share-box .share-label {
+            font-weight: 700;
+            color: #2f3f64;
+            margin-right: 0.2em;
+        }
+
+        .blog .share-box a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.3em;
+            height: 2.3em;
+            border-radius: 50%;
+            border: 1px solid #d7dff0;
+            background: #fff;
+            color: #35508e;
+            text-decoration: none;
+            box-shadow: 0 2px 7px rgba(31, 42, 68, 0.06);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+        }
+
+        .blog .share-box a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(31, 42, 68, 0.10);
+            color: #1f2a44;
+        }
+
+        .blog .share-box a i {
+            margin-right: 0;
+            font-size: 1rem;
+        }
+
+        .blog .share-box a.is-copy.copied {
+            color: #1f7a3f;
+            border-color: #b7e0c4;
+        }
+    </style>
+</head>
+
+<body class="landing">
+    <header id="header">
+        <h1><a href="/"><strong>Jafar</strong> Bakhshaliyev</a></h1>
+        <nav id="nav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/#papers">Papers</a></li>
+                <li><a href="/#projects">Projects</a></li>
+                <li><a href="/blogs/" class="active">Blogs</a></li>
+                <li><a href="/books/">Books</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="one" class="wrapper style1 special blogwrapper">
+        <div class="container 75%">
+            <header class="major blogheader">
+                <h2>Spiking Neural Networks for Time Series Forecasting</h2>
+                <p>From Hodgkin&ndash;Huxley simplifications and LIF dynamics, through CPG positional encodings and dual-compartment neuron models, and finally to graph-structured Fourier spectral operators for energy-efficient multivariate forecasting.</p>
+            </header>
+
+            <div class="align-left blog">
+                <div class="resource-box">
+                    <span class="resource-label">Resources:</span>
+                    <span><i class="fa-regular fa-file-lines"></i><a href="#references">References</a></span>
+                    <span><i class="fa-solid fa-file-lines"></i><a href="https://arxiv.org/abs/2606.13901" target="_blank" rel="noopener">SpikF-GO</a></span>
+                    <span><i class="fa-brands fa-github"></i><a href="https://github.com/jafarbakhshaliyev/SpikF-GO" target="_blank" rel="noopener">SpikF-GO code</a></span>
+                    <span><i class="fa-solid fa-diagram-project"></i><a href="https://github.com/spikora/SpikingTSF" target="_blank" rel="noopener">SpikingTSF open library</a></span>
+                </div>
+
+                <div class="share-box">
+                    <span class="share-label">Share:</span>
+                    <a data-share="x" href="#" target="_blank" rel="noopener" aria-label="Share on X" title="X">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </a>
+                    <a data-share="linkedin" href="#" target="_blank" rel="noopener" aria-label="Share on LinkedIn" title="LinkedIn">
+                        <i class="fa-brands fa-linkedin-in"></i>
+                    </a>
+                    <a data-share="facebook" href="#" target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                    <a data-share="reddit" href="#" target="_blank" rel="noopener" aria-label="Share on Reddit" title="Reddit">
+                        <i class="fa-brands fa-reddit-alien"></i>
+                    </a>
+                    <a data-share="whatsapp" href="#" target="_blank" rel="noopener" aria-label="Share on WhatsApp" title="WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                    <a data-share="telegram" href="#" target="_blank" rel="noopener" aria-label="Share on Telegram" title="Telegram">
+                        <i class="fa-brands fa-telegram"></i>
+                    </a>
+                    <a data-share="email" href="#" aria-label="Share by email" title="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a data-share="copy" class="is-copy" href="#" aria-label="Copy page link" title="Copy link">
+                        <i class="fas fa-link"></i>
+                    </a>
+                </div>
+
+                <p class="lead">
+                    Spiking Neural Networks (SNNs) have emerged as an energy-efficient alternative to conventional
+                    neural networks. Instead of transmitting continuous-valued activations at every layer, SNNs
+                    communicate through sparse binary spike events. This event-driven view makes them attractive
+                    for resource-constrained settings and neuromorphic hardware, where computation can be performed
+                    only when spikes occur.
+                </p>
+
+                <p>
+                    For a long time, most successful SNN applications were in computer vision, event-based sensing,
+                    robotics, and other domains where sparse events are natural. More recently, SNNs have started to
+                    appear in time series forecasting (TSF). This direction is promising because forecasting is
+                    inherently temporal: the model has to understand how a signal evolves over time. At the same time,
+                    TSF is challenging for SNNs because real-world time series are continuous-valued, while SNNs work
+                    with discrete spikes. Therefore, successful SNN forecasting models need careful temporal alignment,
+                    effective spike encoding, and architectures that can model both short-term and long-term patterns.
+                </p>
+
+                <p>
+                    This blog gives an overview of this development. We start from basic neuron models, introduce
+                    the Leaky Integrate-and-Fire (LIF) neuron used in many forecasting models, discuss temporal
+                    alignment, then move through the main SNN forecasting directions: spiking TCN/RNN/Transformer
+                    backbones, CPG-based positional encoding, Temporal Segment LIF neurons, SpikF, and finally
+                    SpikF-GO, our graph-based spiking Fourier model for multivariate time series forecasting.
+                </p>
+                <h3>From Biological Neuron Models to SNNs</h3>
+
+                <p>
+                    The idea of using spikes as computational signals is not new. Maass described networks of spiking
+                    neurons as the third generation of neural network models, after threshold-based networks and
+                    continuous activation-based neural networks [1]. The important change is that the timing of spikes
+                    becomes part of the computation. A neuron does not only say <em>how much</em> it is activated;
+                    it also says <em>when</em> it fires.
+                </p>
+
+                <p>
+                    A biological neuron is a complex dynamical system. The Hodgkin&ndash;Huxley model is one of the
+                    classical detailed models for action potential generation. It describes the membrane current using
+                    the membrane capacitance and ionic currents, especially sodium, potassium, and leak currents [4].
+                    In a simplified form, the membrane current can be written as:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    C_m\frac{dV}{dt}
+                    = I_{\mathrm{ext}}
+                    - \bar{g}_{\mathrm{Na}}m^3h(V-E_{\mathrm{Na}})
+                    - \bar{g}_{\mathrm{K}}n^4(V-E_{\mathrm{K}})
+                    - g_{\mathrm{L}}(V-E_{\mathrm{L}}).
+                    \]
+                </div>
+
+                <p>
+                    This model is biologically meaningful, but it is also mathematically and computationally more
+                    expensive than what we usually want inside deep learning models. For this reason, most SNN
+                    forecasting models use simpler neuron models. The most common one is the Leaky Integrate-and-Fire
+                    neuron. It keeps the main idea of membrane potential accumulation, leakage, threshold crossing,
+                    spike emission, and reset, but it avoids the detailed ion-channel dynamics of Hodgkin&ndash;Huxley.
+                </p>
+
+                <p>
+                    The general SNN literature also shows why this simplification is useful. SNNs can exploit sparsity,
+                    temporal coding, and event-driven processing, and they are especially suitable for neuromorphic
+                    hardware. Review papers report applications in computer vision, robotics, motor control, navigation,
+                    biosignal processing, and other low-power settings [3].
+                </p>
+
+                <h3>The LIF Neuron and Surrogate Gradients</h3>
+
+                <p>
+                    In the forecasting models discussed here, the LIF neuron is usually the fundamental spiking unit.
+                    In discrete time, we can write the membrane update as:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    U[t] = H[t-\Delta t] + I[t],
+                    \qquad
+                    S[t] = \mathbf{1}(U[t] \geq \vartheta),
+                    \]
+                    \[
+                    H[t] = V_{\mathrm{reset}}S[t] + (1-S[t])\beta U[t].
+                    \]
+                </div>
+
+                <p>
+                    Here, \(U[t]\) is the membrane potential at step \(t\), \(I[t]\) is the input current from the
+                    previous layer, \(\beta < 1\) is the decay factor, \(\vartheta\) is the firing threshold, and
+                    \(V_{\mathrm{reset}}\) is the reset potential. When the membrane potential crosses the threshold,
+                    the neuron emits a binary spike \(S[t]=1\). Otherwise, no spike is emitted and the membrane
+                    potential decays.
+                </p>
+
+                <p>
+                    The main difficulty is training. The spike function \(\mathbf{1}(\cdot)\) is non-differentiable,
+                    so standard backpropagation cannot pass gradients through it directly. A common solution is to
+                    use surrogate gradients during Backpropagation Through Time (BPTT) [2]. One practical choice is the
+                    arctangent surrogate:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    S[t] \approx \frac{1}{\pi}\arctan\!\left(\frac{\pi}{2}\alpha U[t]\right) + \frac{1}{2},
+                    \]
+                </div>
+
+                <p>
+                    where \(\alpha\) controls the sharpness of the approximation. This does not make the forward pass
+                    non-spiking: the model can still use binary spikes in the forward computation. The surrogate is mainly
+                    used to make the backward pass trainable.
+                </p>
+
+                <h3>Temporal Alignment for Time Series Forecasting</h3>
+
+                <p>
+                    A key question in SNN forecasting is how to align a continuous time series with the discrete spiking
+                    dimension. A regular time series has a sampling interval \(\Delta T\), while an SNN simulation uses
+                    a smaller internal time step \(\Delta t\). A common solution is to divide each time-series step into
+                    \(T_s\) finer spiking steps:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \Delta T = T_s \Delta t.
+                    \]
+                </div>
+
+                <p>
+                    This means that each time-series observation can be represented by multiple possible spike events.
+                    For an input with \(T\) time steps and \(N\) variables, the model can process up to
+                    \(T_s \times T \times N\) spike events per sample. A spike encoder then converts the original
+                    floating-point values into spike trains with temporal resolution \(T_s\).
+                </p>
+
+                <p>
+                    This step is more important than it first appears. If the encoding is too simple, the model may lose
+                    meaningful information from the continuous signal. If the encoding is too dense, the model may lose
+                    the energy benefit of sparse spikes. Therefore, early SNN forecasting work focused not only on
+                    backbones, but also on spike encoders and temporal alignment.
+                </p>
+
+                <h3>Problem Formulation: Multivariate Time Series Forecasting</h3>
+
+                <div class="resource-box">
+                    <span class="resource-label">SpikF-GO resources:</span>
+                    <span><i class="fa-solid fa-file-lines"></i><a href="https://arxiv.org/abs/2606.13901" target="_blank" rel="noopener">SpikF-GO</a></span>
+                    <span><i class="fa-brands fa-github"></i><a href="https://github.com/jafarbakhshaliyev/SpikF-GO" target="_blank" rel="noopener">Code</a></span>
+                </div>
+
+                <p>
+                    We follow the problem formulation used in our SpikF-GO paper. In multivariate time series
+                    forecasting, the goal is to predict future values of several correlated variables over time.
+                    A batch of multivariate time series with batch size \(B\), sequence length \(T\), and
+                    \(N\) variables is represented as:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    X \in \mathbb{R}^{B\times T\times N},
+                    \]
+                </div>
+
+                <p>
+                    where \(X_{b,t,n}\) denotes the value of variable \(n \in \{1,\ldots,N\}\) at time
+                    \(t \in \{1,\ldots,T\}\) for sample \(b \in \{1,\ldots,B\}\). We denote the
+                    \(N\)-dimensional observation vector at time \(t\) by \(x_{b,t} \in \mathbb{R}^{N}\).
+                </p>
+
+                <p>
+                    Given a look-back window length \(L < T\) and a forecast horizon \(O = T-L\), the input
+                    window and prediction target for each sample \(b\) are constructed as:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    X_{\mathrm{in}}^{(b)}=
+                    \left[x_{b,1},x_{b,2},\ldots,x_{b,L}\right]
+                    \in \mathbb{R}^{L\times N},
+                    \]
+                    \[
+                    Y^{(b)}=
+                    \left[x_{b,L+1},x_{b,L+2},\ldots,x_{b,T}\right]
+                    \in \mathbb{R}^{O\times N}.
+                    \]
+                </div>
+
+                <p>
+                    Stacking all input windows and targets gives the batched tensors:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    X_{\mathrm{in}} \in \mathbb{R}^{B\times L\times N},
+                    \qquad
+                    Y \in \mathbb{R}^{B\times O\times N}.
+                    \]
+                </div>
+
+                <p>
+                    A forecasting model \(F_{\theta}\), parameterized by \(\theta\), learns the mapping:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    F_{\theta}:\mathbb{R}^{B\times L\times N}
+                    \rightarrow
+                    \mathbb{R}^{B\times O\times N},
+                    \qquad
+                    X_{\mathrm{in}} \mapsto F_{\theta}(X_{\mathrm{in}}).
+                    \]
+                </div>
+
+                <p>
+                    The model is trained by minimizing Mean Squared Error over mini-batches:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \mathcal{L}_{\mathrm{MSE}}
+                    =
+                    \frac{1}{BON}
+                    \left\lVert Y - F_{\theta}(X_{\mathrm{in}})\right\rVert_F^2,
+                    \]
+                </div>
+
+                <p>
+                    where \(\lVert\cdot\rVert_F\) denotes the Frobenius norm. Although this formulation is simple,
+                    the modeling problem is not. A good multivariate forecasting model should learn temporal
+                    dependencies within each variable, dependencies between variables, and how these relationships
+                    change over time.
+                </p>
+
+                <h3>First Systematic SNN Forecasting Backbones</h3>
+
+                <p>
+                    The first systematic study of SNNs for time series forecasting proposed spiking variants of common
+                    temporal backbones: Spike-TCN, Spike-RNN, Spike-GRU, and iSpikformer [5]. This work showed
+                    that SNNs can be competitive with classical ANN forecasting models while using much lower
+                    theoretical energy.
+                </p>
+
+                <h4>Spike-TCN</h4>
+
+                <p>
+                    A Temporal Convolutional Network (TCN) models sequences with causal and dilated convolutions [12].
+                    In the spiking version, standard activation functions such as ReLU are replaced by spiking neuron
+                    layers. Hardware-unfriendly operations such as dropout are removed, and residual connections are
+                    adapted to a spike-compatible form. Since TCNs do not carry recurrent states across time steps, the
+                    membrane state can be reset at the beginning of each time-series step, which makes parallel training
+                    easier.
+                </p>
+
+                <h4>Spike-RNN and Spike-GRU</h4>
+
+                <p>
+                    RNNs are natural candidates for sequence modeling because they maintain an internal hidden state.
+                    In a Spike-RNN, the recurrent activation is replaced with a spiking neuron layer. Unlike Spike-TCN,
+                    the membrane potential is carried across time steps, which gives the model a stateful temporal memory.
+                    GRU-style gating can also be adapted to improve long-term dependency modeling [13].
+                </p>
+
+                <h4>iSpikformer</h4>
+
+                <p>
+                    Transformers are powerful for time series, but attention has a known issue: without positional
+                    information, self-attention is permutation-invariant. iSpikformer adapts the inverted Transformer
+                    idea into a spiking architecture, showing that spike-based temporal processing can be combined with
+                    modern spatial modeling across variables.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/method.png" alt="Spike-TCN, Spike-RNN, and iSpikformer architectures" />
+                    <p class="caption"><strong>Figure 1.</strong> Spiking forecasting backbones from the first systematic SNN forecasting framework. The pipeline converts continuous time-series values into spike trains, processes them with spike-compatible TCN, recurrent, and Transformer-style architectures, and decodes the spike features back to continuous forecasts.</p>
+                </div>
+
+                <p>
+                    The main result from this line of work is that SNNs are not only biologically inspired. They can also
+                    be practical forecasting models. On the Electricity benchmark, the study reported a theoretical energy
+                    reduction of 63.60% for Spike-TCN compared to TCN, 75.05% for Spike-GRU compared to GRU, and
+                    66.30% for iSpikformer compared to iTransformer [5]. This made SNN forecasting a realistic
+                    research direction rather than only a conceptual idea.
+                </p>
+
+                <h3>CPG-Based Positional Encoding</h3>
+
+                <p>
+                    A second direction focuses on positional information. Sequence models need to know the order of
+                    input elements. This is easy to handle in standard Transformers with sinusoidal or learned positional
+                    embeddings, but it is harder in SNNs because the representation should remain spike-based and
+                    hardware-friendly.
+                </p>
+
+                <p>
+                    Central Pattern Generators (CPGs) are biological neural circuits that produce rhythmic patterned
+                    outputs without requiring rhythmic inputs. Inspired by this mechanism, CPG-PE proposes a
+                    spike-form positional encoding strategy for SNNs [6]. The key observation is that sinusoidal
+                    positional encoding can be interpreted as a special solution of a simple CPG-like dynamical system.
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \mathrm{CPG\mbox{-}PE}_{2i-1}(t)
+                    =
+                    H\!\left(
+                    \cos\!\left(\eta \frac{t}{\tau}\frac{i}{N}\right)
+                    - v_{\mathrm{thres}}
+                    \right),
+                    \]
+                    \[
+                    \mathrm{CPG\mbox{-}PE}_{2i}(t)
+                    =
+                    H\!\left(
+                    \sin\!\left(\eta \frac{t}{\tau}\frac{i}{N}\right)
+                    - v_{\mathrm{thres}}
+                    \right).
+                    \]
+                </div>
+
+                <p>
+                    The output is still binary, because a spike is emitted only when the sinusoidal membrane signal
+                    exceeds the threshold. Instead of adding positional encodings to spike matrices, CPG-PE concatenates
+                    the positional spike matrix with the input spike matrix, then maps the dimension back using a linear
+                    layer, batch normalization, and a spiking neuron layer. This avoids producing non-binary values from
+                    direct addition.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/CPG.png" alt="CPG positional encoding spike patterns" />
+                    <p class="caption"><strong>Figure 2.</strong> CPG-based positional encoding for SNNs. CPG neurons generate binary rhythmic spike patterns that encode sequence position; the positional spike matrix is concatenated with the input spike matrix and mapped back to the original feature dimension.</p>
+                </div>
+
+                <p>
+                    In time series forecasting, CPG-PE improved spiking TCN, RNN, and Transformer models. The reported
+                    average improvement was \(+0.013\) in \(R^2\) and \(-0.022\) in RSE compared to SNNs without
+                    positional encoding [6]. This suggests that position remains an open and important issue in spiking
+                    sequence models.
+                </p>
+
+                <h3>Improving the Neuron: Temporal Segment LIF</h3>
+
+                <p>
+                    Another direction does not start from the architecture, but from the neuron itself. Standard LIF neurons
+                    are simple and efficient, but their membrane potential decays quickly. This can make it difficult to
+                    capture long-term dependencies and multi-timescale patterns. TS-LIF addresses this by introducing
+                    a dual-compartment neuron with dendritic and somatic states [7].
+                </p>
+
+                <p>
+                    The model is inspired by the fact that biological neurons do not process all information through a
+                    single scalar state. Dendrites and soma can have different roles. TS-LIF uses this idea to separate
+                    low-frequency and high-frequency components:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    v_d[t] =
+                    \alpha_1 v_d[t-1] + \beta_1 v_s[t-1]
+                    + (1-\alpha_1)c[t] - \gamma_1 s_d[t-1],
+                    \]
+                    \[
+                    v_s[t] =
+                    \alpha_2 v_s[t-1] + \beta_2 v_d[t]
+                    + (1-\alpha_2)c[t] - \gamma_2 s_s[t-1],
+                    \]
+                    \[
+                    s_d[t] = H(v_d[t]-v_{\mathrm{th}}),
+                    \qquad
+                    s_s[t] = H(v_s[t]-v_{\mathrm{th}}).
+                    \]
+                </div>
+
+                <p>
+                    Here, \(v_d\) and \(v_s\) are dendritic and somatic membrane potentials. When \(\alpha_1\) is close
+                    to 1, the dendritic compartment behaves like a moving average and captures slower, low-frequency
+                    changes. When \(\alpha_2\) is close to 0, the somatic compartment reacts quickly and captures
+                    rapid fluctuations. The model then mixes dendritic and somatic spikes:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    s_{\mathrm{mix}}[t] = \kappa s_d[t] + (1-\kappa)s_s[t].
+                    \]
+                </div>
+
+                <p>
+                    TS-LIF also provides a stability analysis. By studying the homogeneous system, the eigenvalues are:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \lambda =
+                    \frac{
+                    \alpha_1 + \alpha_2 + \beta_1\beta_2
+                    \pm
+                    \sqrt{(\alpha_1+\alpha_2+\beta_1\beta_2)^2 - 4\alpha_1\alpha_2}
+                    }{2}.
+                    \]
+                </div>
+
+                <p>
+                    The model remains stable when both eigenvalues lie inside the unit circle, i.e. \(|\lambda|<1\).
+                    This is useful because it connects neuron design with the stability of temporal processing. In the
+                    paper, TS-LIF consistently improves LIF-based TCN, GRU, and Transformer backbones and shows
+                    stronger robustness under missing inputs [7].
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/tslif.png" alt="Temporal Segment LIF neuron with dendritic and somatic compartments" />
+                    <p class="caption"><strong>Figure 3.</strong> Temporal Segment LIF neuron. The dendritic compartment emphasizes slow and low-frequency components, the somatic compartment captures faster high-frequency responses, and their spike outputs are mixed to improve multi-timescale temporal modeling.</p>
+                </div>
+
+                <h3>Fourier-Domain Processing: SpikF</h3>
+
+                <p>
+                    A different line of work asks whether attention is necessary at all. SpikF proposes an attention-free
+                    spiking Fourier architecture for long-term prediction [8]. The motivation is clear: self-attention can
+                    struggle with positional information, while the Fourier transform naturally depends on the order of
+                    the sequence through its rotation factors.
+                </p>
+
+                <p>
+                    SpikF contains three main components. First, a Spiking Patch Encoder splits the input sequence into
+                    patches and encodes each patch into binary spike trains. Second, a Spiking Frequency Selector applies
+                    S-FFT to grouped spike patches and selects important frequency components. Third, an MLP decoder
+                    reconstructs the final continuous-valued forecast.
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    F[k] = \sum_{t=1}^{T} S[t]e^{-j\frac{2\pi}{T}kt}.
+                    \]
+                </div>
+
+                <p>
+                    Because each frequency component depends on all time positions, Fourier-domain processing expands
+                    the receptive field and helps long-term dependency modeling. SpikF reports strong long-term forecasting
+                    performance, including an average 1.9% MAE reduction compared to state-of-the-art models and a
+                    3.16&times; lower total energy consumption than iTransformer in the reported energy analysis [8].
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/SpikF.jpg" alt="SpikF architecture with Spiking Patch Encoder and Spiking Frequency Selector" />
+                    <p class="caption"><strong>Figure 4.</strong> SpikF architecture. The input sequence is divided into patches, encoded as spike trains, processed by S-FFT and spiking frequency selection, and decoded into long-term forecasts.</p>
+                </div>
+
+                <p>
+                    SpikF is one of the strongest SNN forecasting models, but it still mainly processes variables without
+                    an explicit graph structure. In many multivariate forecasting tasks, this is a limitation. Variables are
+                    often correlated: traffic sensors influence each other, energy variables co-move, and biomedical signals
+                    may contain coupled patterns. Ignoring these relationships leaves useful predictive information unused.
+                </p>
+
+                <h3>Why Cross-Variable Modeling Matters</h3>
+
+                <p>
+                    Most SNN forecasting models before SpikF-GO focus on temporal dynamics, positional encoding,
+                    or neuron design. These are important, but multivariate time series also require cross-variable modeling.
+                    If a model processes each variable independently, it can miss correlations between sensors, stations,
+                    regions, or channels.
+                </p>
+
+                <p>
+                    Graph neural networks have been widely used in multivariate forecasting because they can model
+                    relationships among variables. However, many graph forecasting models use separate graph modules
+                    for cross-variable structure and temporal modules for time dynamics. FourierGNN introduced a
+                    hypervariate graph formulation where every scalar observation becomes a graph node [11].
+                    This unifies temporal and variable-level modeling in one structure.
+                </p>
+
+                <p>
+                    SpikF-GO is built from this idea. It combines the hypervariate graph formulation of FourierGNN with
+                    spike-driven Fourier-domain processing inspired by SpikF. The goal is to bring explicit graph-based
+                    multivariate modeling into the spiking domain.
+                </p>
+
+                <h3>SpikF-GO: Spiking Fourier Graph Operators</h3>
+
+                <p>
+                    SpikF-GO treats each scalar observation in the input window as a node [9]. If the input has \(L\) time
+                    steps and \(N\) variables, then the hypervariate graph contains:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    M = N \times L
+                    \]
+                </div>
+
+                <p>
+                    nodes. This graph can connect any variable at any time step with any other variable at any other time
+                    step. In this way, the model can capture three types of information in one representation:
+                    intra-series temporal dependencies, inter-series dependencies, and time-varying cross-variable interactions.
+                </p>
+
+                <div class="figure">
+                    <img src="/blogs/images/architecture-1.png" alt="Hypervariate graph formulation in SpikF-GO" />
+                    <p class="caption"><strong>Figure 5.</strong> SpikF-GO architecture. The \(L \times N\) input window is represented as a hypervariate graph with \(M=N\times L\) nodes, then processed through S-FFT, a sparse frequency gate, Complex LIF-gated S-FGO layers, S-iFFT, and a decoder for multivariate forecasting.</p>
+                </div>
+
+                <h4>Encoder and hypervariate graph</h4>
+
+                <p>
+                    The graph formation operator flattens the input:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    X_G = \mathcal{H}(X_{\mathrm{in}}) \in \mathbb{R}^{B\times M}.
+                    \]
+                </div>
+
+                <p>
+                    Each node is projected into an embedding space and normalized. The default model uses RMSNorm,
+                    which normalizes without mean subtraction. In our ablation, replacing RMSNorm with a simpler
+                    Scale-Shift affine transform gives almost identical performance on Solar and only slight degradation
+                    on Traffic and COVID-19, making it a hardware-friendly alternative.
+                </p>
+
+                <p>
+                    After normalization, the representation is repeated across \(T_s\) SNN steps and modulated by learnable
+                    per-step parameters:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    U_t = \widehat{V}\cdot \gamma_t + \beta_t,
+                    \qquad
+                    t=1,\ldots,T_s.
+                    \]
+                </div>
+
+                <p>
+                    A LIF encoder then produces binary spike trains:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    S =
+                    [\mathrm{LIF}(U_1),\ldots,\mathrm{LIF}(U_{T_s})]
+                    \in \{0,1\}^{T_s \times B \times M \times E}.
+                    \]
+                </div>
+
+                <h4>S-FFT and sparse frequency gate</h4>
+
+                <p>
+                    SpikF-GO applies S-FFT along the hypervariate graph node axis. In the Fourier domain, multiplication
+                    corresponds to graph convolution in the node domain, so spectral operations perform implicit graph
+                    mixing:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    Z = \mathcal{SF}(S) \in \mathbb{C}^{T_s \times B \times F \times E}.
+                    \]
+                </div>
+
+                <p>
+                    The model then uses a Hard Concrete frequency gate to learn which frequency bins are useful. During
+                    training, a learnable parameter \(\log \alpha_f\) is used for each frequency bin:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \bar{S}_f =
+                    \sigma\!\left(
+                    \frac{\log u - \log(1-u) + \log \alpha_f}{\tau}
+                    \right)(\zeta-\gamma)+\gamma,
+                    \qquad
+                    u \sim \mathrm{Uniform}(0,1),
+                    \]
+                    \[
+                    M_f = \min(1,\max(0,\bar{S}_f)).
+                    \]
+                </div>
+
+                <p>
+                    The gate is applied to the spectrum:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \widetilde{Z}=Z \odot M.
+                    \]
+                </div>
+
+                <p>
+                    A sparsity penalty encourages the model to use fewer frequency bins:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    \mathcal{L}_{\ell_0} =
+                    \frac{1}{F}\sum_{f=1}^{F}\sigma(\log \alpha_f).
+                    \]
+                </div>
+
+                <p>
+                    This is important for efficiency because fewer active frequencies can reduce computation and make
+                    inference more suitable for neuromorphic deployment.
+                </p>
+
+                <h4>Complex LIF gate and S-FGO block</h4>
+
+                <p>
+                    The S-FGO block applies complex-valued linear operators in the frequency domain. To preserve the
+                    event-driven nature of the model, SpikF-GO introduces a Complex LIF gate. For a complex tensor
+                    \(Q=Q_r+iQ_i\), the gate applies independent LIF neurons to the real and imaginary parts:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    G(Q)=
+                    Q \odot
+                    \left[
+                    \mathbf{1}(\mathrm{LIF}(Q_r)>0)
+                    \vee
+                    \mathbf{1}(\mathrm{LIF}(Q_i)>0)
+                    \right].
+                    \]
+                </div>
+
+                <p>
+                    This keeps the spectral computation sparse and binary-gated. After several S-FGO layers, S-iFFT maps
+                    the processed spectrum back to the node domain and separates it again into variable and temporal axes:
+                </p>
+
+                <div class="equation-block">
+                    \[
+                    P = \mathcal{SF}^{-1}(Z^{(N_{\ell})})
+                    \in \mathbb{R}^{T_s\times B\times N\times E\times L}.
+                    \]
+                </div>
+
+                <h4>Decoder</h4>
+
+                <p>
+                    The decoder compresses the temporal dimension, applies a LIF layer at each spiking step, averages over
+                    SNN steps, and uses a final projection to produce the forecast. This part returns the model from sparse
+                    spike-based processing back to continuous-valued predictions, which are needed for regression tasks such
+                    as forecasting.
+                </p>
+
+                <h3>Main Results of SpikF-GO</h3>
+
+                <p>
+                    SpikF-GO was evaluated on eight multivariate benchmarks under a unified protocol: ECG, COVID-19,
+                    Solar, Electricity, METR-LA, Traffic, PEMS-BAY, and Wiki. The baselines include FourierGNN, Spike-GRU,
+                    iSpikformer, SpikeRNN/SpikeTCN/Spikformer with CPG, TS-GRU/TS-TCN/TS-Former, and SpikF.
+                    The input window and forecast horizon are both 12, and results are averaged over 5 runs [9].
+                </p>
+
+                <h4>Results on ECG, COVID-19, Solar, and Electricity</h4>
+
+                <div class="figure">
+                    <img src="/blogs/images/table1.png" alt="Forecasting results on ECG, COVID-19, Solar, and Electricity" />
+                    <p class="caption"><strong>Table 1.</strong> Forecasting results on ECG, COVID-19, Solar, and Electricity, averaged over five runs. The table compares FourierGNN and major SNN forecasting baselines with SpikF-GO and SpikF-GO w/ CPG using \(R^2\), MAE, and average rank.</p>
+                </div>
+
+                <p>
+                    Table 1 shows that SpikF-GO and SpikF-GO w/ CPG are consistently strong. SpikF-GO w/ CPG achieves
+                    the best overall average rank on both \(R^2\) and MAE. The CPG variant is especially useful on datasets
+                    where additional positional structure improves long-range modeling.
+                </p>
+
+                <h4>Results on METR-LA, Traffic, PEMS-BAY, and Wiki</h4>
+
+                <div class="figure">
+                    <img src="/blogs/images/table2.png" alt="Forecasting results on METR-LA, Traffic, PEMS-BAY, and Wiki" />
+                    <p class="caption"><strong>Table 2.</strong> Forecasting results on METR-LA, Traffic, PEMS-BAY, and Wiki, averaged over five runs. These datasets are especially important for evaluating cross-variable dependencies in sensor, traffic, and web-traffic forecasting settings.</p>
+                </div>
+
+                <p>
+                    Table 2 is important because Traffic, METR-LA, and PEMS-BAY contain strong sensor correlations.
+                    The improvement of SpikF-GO on these datasets supports the central claim: explicit cross-variable
+                    modeling matters for multivariate forecasting.
+                </p>
+
+                <h4>Hyperparameter sensitivity</h4>
+
+                <div class="figure">
+                    <img src="/blogs/images/ablation_study.png" alt="Sensitivity analysis of SpikF-GO over spiking steps, input length, and embedding size" />
+                    <p class="caption"><strong>Figure 6.</strong> Sensitivity analysis of SpikF-GO with respect to spiking timesteps \(T_s\), input window length \(L\), and embedding size \(E\). Performance improves with more spiking steps until saturation, \(L=96\) is usually sufficient, and compact embeddings can preserve performance while reducing memory and energy cost.</p>
+                </div>
+
+                <p>
+                    The sensitivity analysis shows that increasing \(T_s\) helps until saturation. Increasing \(L\) beyond
+                    96 gives only small gains in the tested setting. Most importantly, performance remains stable across
+                    embedding sizes from \(E=8\) to \(E=128\), which is useful for neuromorphic deployment because
+                    smaller embeddings reduce memory and energy cost.
+                </p>
+
+                <h4>Energy and runtime</h4>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th class="left">Model</th>
+                            <th>\(E_{\mathrm{Mem}}\) / &micro;J</th>
+                            <th>\(E_{\mathrm{Ops}}\) / &micro;J</th>
+                            <th>\(E_{\mathrm{Addr}}\) / &micro;J</th>
+                            <th>\(E_{\mathrm{Total}}\) / &micro;J</th>
+                            <th>Time / s</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="left">FourierGNN</td>
+                            <td>\(7.76\times 10^4\)</td>
+                            <td>\(1.13\times 10^4\)</td>
+                            <td>\(1.29\times 10^1\)</td>
+                            <td>\(8.89\times 10^4\)</td>
+                            <td>0.012 / 0.002</td>
+                        </tr>
+                        <tr>
+                            <td class="left"><strong>SpikF-GO</strong></td>
+                            <td>\(4.43\times 10^4\)</td>
+                            <td>\(2.17\times 10^3\)</td>
+                            <td>\(5.19\times 10^2\)</td>
+                            <td>\(4.70\times 10^4\) &darr;1.89&times;</td>
+                            <td>0.027 / 0.011</td>
+                        </tr>
+                        <tr>
+                            <td class="left">SpikF</td>
+                            <td>\(2.05\times 10^4\)</td>
+                            <td>\(2.61\times 10^2\)</td>
+                            <td>\(7.91\times 10^1\)</td>
+                            <td>\(2.08\times 10^4\) &darr;4.27&times;</td>
+                            <td>0.077 / 0.037</td>
+                        </tr>
+                        <tr>
+                            <td class="left"><strong>SpikF-GO (\(E=8\))</strong></td>
+                            <td>\(9.28\times 10^3\)</td>
+                            <td>\(2.00\times 10^3\)</td>
+                            <td>\(2.79\times 10^1\)</td>
+                            <td>\(1.13\times 10^4\) &darr;7.86&times;</td>
+                            <td>0.020 / 0.010</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="caption"><strong>Table 4.</strong> Energy consumption and wall-clock runtime on Solar with prediction length 12. Energy is decomposed into memory-access, operational, and addressing costs, and reductions are reported relative to FourierGNN.</p>
+
+                <p>
+                    Table 4 gives the clearest efficiency message. The full SpikF-GO model reduces theoretical energy by
+                    1.89&times; compared to FourierGNN while improving forecasting performance. The compact
+                    \(E=8\) version reaches 7.86&times; lower energy with little performance change. This is an important
+                    result because it shows that graph-based spiking forecasting does not only improve modeling; it can
+                    also remain energy-efficient.
+                </p>
+
+                <p>
+                    There is one practical detail to interpret carefully. FourierGNN has faster wall-clock runtime on GPU
+                    because it uses standard ANN operations. SNN models simulate multiple spiking steps on GPU, which
+                    introduces overhead. This does not necessarily reflect what would happen on neuromorphic hardware,
+                    where spikes can be processed as event-driven operations.
+                </p>
+
+                <h3>What the Research Direction Shows</h3>
+
+                <p>
+                    Looking across these papers, the story is clear. The first SNN forecasting work showed that spiking
+                    versions of TCN, RNN, and Transformer backbones can forecast time series with much lower theoretical
+                    energy. CPG-PE showed that positional encoding remains important and can be made spike-compatible.
+                    TS-LIF showed that neuron dynamics can be redesigned to better handle long-term and multi-timescale
+                    patterns. SpikF showed that Fourier-domain processing is a strong alternative to self-attention for
+                    spiking long-term prediction. SpikF-GO then extends this direction to explicit multivariate graph
+                    modeling.
+                </p>
+
+                <p>
+                    The remaining challenge is deployment. Most energy analyses in SNN forecasting papers are theoretical.
+                    They use common assumptions such as energy per MAC and energy per AC operation on 45 nm hardware.
+                    These comparisons are useful for algorithm design, but future work should test more models on real
+                    neuromorphic hardware and include memory access, addressing, and implementation overhead.
+                </p>
+
+                <p>
+                    Another open direction is the decoder. Forecasting is a regression task, and the final output is usually
+                    continuous-valued. This means that even if the encoder and feature extractor are spike-based, the last
+                    projection often returns to floating-point values. Building more spike-native decoders for regression is
+                    still an important open problem.
+                </p>
+
+                <h3>Open Library and Future Contributions</h3>
+
+                <p>
+                    To support this growing direction, we maintain <a href="https://github.com/spikora/SpikingTSF" target="_blank" rel="noopener">SpikingTSF</a> [10],
+                    an open-source benchmark library for SNN-based time series forecasting models. The goal is to provide a
+                    unified and easy-to-extend library where researchers can compare new SNN forecasting architectures
+                    under consistent settings. We welcome new models that are published at conferences, journals, or made
+                    available as high-quality preprints, especially models that improve spiking encoders, positional encoding,
+                    neuron dynamics, graph modeling, Fourier-domain processing, or neuromorphic deployment.
+                </p>
+
+                <div class="resource-box">
+                    <span class="resource-label">Open library:</span>
+                    <span><i class="fa-brands fa-github"></i><a href="https://github.com/spikora/SpikingTSF" target="_blank" rel="noopener">SpikingTSF repository</a></span>
+                    <span><i class="fa-brands fa-github"></i><a href="https://github.com/jafarbakhshaliyev/SpikF-GO" target="_blank" rel="noopener">SpikF-GO code</a></span>
+                    <span><i class="fa-regular fa-circle-question"></i><a href="https://github.com/spikora/SpikingTSF/issues" target="_blank" rel="noopener">Suggest a model</a></span>
+                </div>
+
+                <h3>Conclusion</h3>
+
+                <p>
+                    SNNs bring a different view to time series forecasting. Instead of processing every value with dense
+                    continuous operations, they process information through sparse spike events and neuron dynamics.
+                    This is attractive for efficient and neuromorphic forecasting, but it also creates new challenges:
+                    continuous-to-spike encoding, temporal alignment, positional information, long-term dependency
+                    modeling, multivariate correlation modeling, and regression decoding.
+                </p>
+
+                <p>
+                    The recent progress shows that these challenges are being addressed one by one. Spiking backbones
+                    made the first step, CPG-PE improved positional structure, TS-LIF improved neuron dynamics,
+                    SpikF showed the power of Fourier-domain processing, and SpikF-GO brings explicit graph-based
+                    multivariate modeling into the spiking domain. Together, these works suggest that SNNs can become
+                    a serious direction for time series forecasting, especially when efficiency and deployment constraints
+                    matter.
+                </p>
+
+                <hr class="section-divider" />
+
+                <h3 id="references">References</h3>
+
+                <ol class="bib">
+                    <li>W. Maass. <em>Networks of Spiking Neurons: The Third Generation of Neural Network Models</em>. Neural Networks, 1997.</li>
+                    <li>J. K. Eshraghian et al. <em>Training Spiking Neural Networks Using Lessons from Deep Learning</em>. arXiv:2109.12894, 2023.</li>
+                    <li>K. Yamazaki, V.-K. Vo-Ho, D. Bulsara, and N. Le. <em>Spiking Neural Networks and Their Applications: A Review</em>. Brain Sciences, 2022.</li>
+                    <li>A. L. Hodgkin and A. F. Huxley. <em>A quantitative description of membrane current and its application to conduction and excitation in nerve</em>. Journal of Physiology, 1952.</li>
+                    <li>C. Lv, Y. Wang, D. Han, X. Zheng, X. Huang, and D. Li. <em>Efficient and Effective Time-Series Forecasting with Spiking Neural Networks</em>. ICML, 2024.</li>
+                    <li>C. Lv, D. Han, Y. Wang, X. Zheng, X. Huang, and D. Li. <em>Advancing Spiking Neural Networks for Sequential Modeling with Central Pattern Generators</em>. NeurIPS, 2024.</li>
+                    <li>S. Feng, W. Feng, X. Gao, P. Zhao, and Z. Shen. <em>TS-LIF: A Temporal Segment Spiking Neuron Network for Time Series Forecasting</em>. ICLR, 2025.</li>
+                    <li>W. Wu, D. Huo, and H. Chen. <em>SpikF: Spiking Fourier Network for Efficient Long-term Prediction</em>. ICML, 2025.</li>
+                    <li>J. Bakhshaliyev and N. Landwehr. <em>SpikF-GO: Spiking Fourier Graph Operators for Multivariate Time Series Forecasting</em>. ECML PKDD, 2026; <a href="https://arxiv.org/abs/2606.13901" target="_blank" rel="noopener">arXiv:2606.13901</a>. Code: <a href="https://github.com/jafarbakhshaliyev/SpikF-GO" target="_blank" rel="noopener">github.com/jafarbakhshaliyev/SpikF-GO</a>.</li>
+                    <li>J. Bakhshaliyev. <em>SpikingTSF: A Unified Benchmark Library for Spiking Neural Network Based Time-Series Forecasting</em>. GitHub repository, 2026. <a href="https://github.com/spikora/SpikingTSF" target="_blank" rel="noopener">github.com/spikora/SpikingTSF</a>.</li>
+                    <li>K. Yi, Q. Zhang, W. Fan, H. He, L. Hu, P. Wang, N. An, L. Cao, and Z. Niu. <em>FourierGNN: Rethinking Multivariate Time Series Forecasting from a Pure Graph Perspective</em>. NeurIPS, 2023.</li>
+                    <li>S. Bai, J. Z. Kolter, and V. Koltun. <em>An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling</em>. arXiv:1803.01271, 2018.</li>
+                    <li>K. Cho et al. <em>Learning Phrase Representations using RNN Encoder&ndash;Decoder for Statistical Machine Translation</em>. EMNLP, 2014.</li>
+                </ol>
+
+                <hr class="section-divider" />
+
+                <h3>Comments</h3>
+                <div id="disqus_thread"></div>
+                <script>
+                    var disqus_config = function () {
+                        this.page.url = window.location.origin + '/blogs/spiking-time-series-forecasting.html';
+                        this.page.identifier = 'spiking-time-series-forecasting-spikf-go';
+                    };
+                    (function () {
+                        var d = document;
+                        var s = d.createElement('script');
+                        s.src = 'https://https-jafarbakhshaliyev-github-io.disqus.com/embed.js';
+                        s.setAttribute('data-timestamp', +new Date());
+                        (d.head || d.body).appendChild(s);
+                    })();
+                </script>
+                <noscript>Please enable JavaScript to view comments powered by Disqus.</noscript>
+
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <ul class="icons">
+                <li><a href="mailto:jafar.bakhshaliyev@gmail.com" class="icon solid fa-envelope"><span
+                            class="label">Email</span></a></li>
+                <li><a href="https://www.linkedin.com/in/jafarbakhshaliyev/"
+                        class="icon brands fa-linkedin" target="_blank"><span
+                            class="label">LinkedIn</span></a></li>
+                <li><a href="https://scholar.google.com/citations?user=hOG05K8AAAAJ&hl=en"
+                        class="icon solid fa-graduation-cap" target="_blank"><span class="label">Google
+                            Scholar</span></a></li>
+                <li><a href="https://github.com/jafarbakhshaliyev"
+                        class="icon brands fa-github" target="_blank"><span
+                            class="label">GitHub</span></a></li>
+                <li><a href="https://twitter.com/JafarBakhshali1"
+                        class="icon brands fa-x-twitter" target="_blank"><span
+                            class="label">Twitter</span></a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; 2026 Jafar Bakhshaliyev</li>
+            </ul>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            function pageUrl() {
+                return window.location.href;
+            }
+            function pageTitle() {
+                return document.title;
+            }
+            function openPopup(url) {
+                window.open(url, '_blank', 'noopener,noreferrer,width=720,height=520');
+            }
+            document.querySelectorAll('[data-share]').forEach(function (el) {
+                el.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var type = el.getAttribute('data-share');
+                    var url = encodeURIComponent(pageUrl());
+                    var title = encodeURIComponent(pageTitle());
+                    if (type === 'x') {
+                        openPopup('https://twitter.com/intent/tweet?url=' + url + '&text=' + title);
+                    } else if (type === 'linkedin') {
+                        openPopup('https://www.linkedin.com/sharing/share-offsite/?url=' + url);
+                    } else if (type === 'facebook') {
+                        openPopup('https://www.facebook.com/sharer/sharer.php?u=' + url);
+                    } else if (type === 'reddit') {
+                        openPopup('https://www.reddit.com/submit?url=' + url + '&title=' + title);
+                    } else if (type === 'whatsapp') {
+                        openPopup('https://api.whatsapp.com/send?text=' + title + '%20' + url);
+                    } else if (type === 'telegram') {
+                        openPopup('https://t.me/share/url?url=' + url + '&text=' + title);
+                    } else if (type === 'email') {
+                        window.location.href = 'mailto:?subject=' + title + '&body=' + url;
+                    } else if (type === 'copy') {
+                        navigator.clipboard.writeText(pageUrl()).then(function () {
+                            el.classList.add('copied');
+                            setTimeout(function () { el.classList.remove('copied'); }, 1500);
+                        });
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
