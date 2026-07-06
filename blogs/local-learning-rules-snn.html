@@ -1,0 +1,647 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Local Learning Rules for Spiking Neural Networks | Jafar Bakhshaliyev</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="description"
+        content="Talk slides: Local Learning Rules for Spiking Neural Networks, covering online learning for RNNs, RTRL approximations, feedback alignment, e-prop, OSTL, ETLP, OSTTP, OTTT, S-TLLR, and TESS." />
+    <meta name="keywords" content="spiking neural networks, local learning, eligibility traces, RTRL, e-prop, feedback alignment, STDP, TESS" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <noscript>
+        <link rel="stylesheet" href="/css/style.css" />
+        <link rel="stylesheet" href="/css/skel.css" />
+        <link rel="stylesheet" href="/css/style-xlarge.css" />
+    </noscript>
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Raleway:500,700">
+    <link rel="stylesheet" type="text/css"
+        href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700">
+    <script src="https://kit.fontawesome.com/7c0ff2a316.js" crossorigin="anonymous"></script>
+    <!--[if lte IE 8]><script src="/js/html5shiv.js"></script><![endif]-->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/skel.min.js"></script>
+    <script src="/js/skel-layers.min.js"></script>
+    <script src="/js/init.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .blogwrapper {
+            padding-top: 5em;
+            padding-bottom: 4em;
+        }
+
+        .blogheader h2 {
+            margin-bottom: 0.25em;
+        }
+
+        .blog-narrow {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .blog {
+            display: block;
+            text-align: left;
+            font-size: 1rem;
+            line-height: 1.9;
+            color: #2b2b2b;
+        }
+
+        .blog p {
+            margin-bottom: 1.15em;
+        }
+
+        .blog .lead {
+            font-size: 1.08rem;
+            color: #404040;
+        }
+
+        .blog .figure {
+            margin: 1.8em 0 2.2em 0;
+            text-align: center;
+            background: #fcfdff;
+            border: 1px solid #e4e9f2;
+            border-radius: 12px;
+            padding: 1rem 1rem 0.9rem 1rem;
+            box-shadow: 0 10px 28px rgba(31, 42, 68, 0.06);
+        }
+
+        .blog .figure img {
+            width: 100%;
+            max-width: 920px;
+            max-height: 72vh;
+            height: auto;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid #e2e6ef;
+            background: #fafbfd;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .blog .slideshow {
+            position: relative;
+            max-width: 1220px;
+            margin: 1.6em auto 0.6em auto;
+            background: linear-gradient(180deg, #fcfdff 0%, #f6f8fc 100%);
+            border: 1px solid #e4e9f2;
+            border-radius: 16px;
+            padding: 1.4rem 1.4rem 1.2rem 1.4rem;
+            box-shadow: 0 18px 40px rgba(31, 42, 68, 0.09);
+        }
+
+        .blog .slide-viewport {
+            position: relative;
+            max-width: 1160px;
+            margin: 0 auto;
+            border-radius: 10px;
+            border: 1px solid #e2e6ef;
+            background: #fafbfd;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(31, 42, 68, 0.05);
+        }
+
+        .blog .slide-viewport img {
+            width: 100%;
+            height: auto;
+            display: block;
+            user-select: none;
+            -webkit-user-drag: none;
+            transition: opacity 0.16s ease;
+        }
+
+        .blog .slide-viewport img.is-loading {
+            opacity: 0.35;
+        }
+
+        .blog .slide-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3em;
+            height: 3em;
+            border-radius: 50%;
+            border: 1px solid #d7dff0;
+            background: rgba(255, 255, 255, 0.9);
+            color: #2f4a8a;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 6px 18px rgba(31, 42, 68, 0.18);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+        }
+
+        .blog .slide-nav:hover:not(:disabled) {
+            background: #2f4a8a;
+            color: #fff;
+            transform: translateY(-50%) scale(1.08);
+        }
+
+        .blog .slide-nav:disabled {
+            opacity: 0.25;
+            cursor: default;
+        }
+
+        .blog .slide-nav.prev {
+            left: 0.9em;
+        }
+
+        .blog .slide-nav.next {
+            right: 0.9em;
+        }
+
+        .blog .slide-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.1em;
+            margin-top: 1em;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .blog .slide-controls input[type="range"] {
+            width: 280px;
+            max-width: 50vw;
+            accent-color: #2f4a8a;
+        }
+
+        .blog .slide-counter {
+            font-variant-numeric: tabular-nums;
+            font-weight: 700;
+            color: #2f3f64;
+            min-width: 4.5em;
+            text-align: center;
+        }
+
+        .blog .slide-fullscreen-btn {
+            position: absolute;
+            top: 0.7em;
+            right: 0.7em;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.4em;
+            height: 2.4em;
+            border-radius: 50%;
+            border: 1px solid #d7dff0;
+            background: rgba(255, 255, 255, 0.9);
+            color: #2f4a8a;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: 0 4px 14px rgba(31, 42, 68, 0.15);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+        .blog .slide-fullscreen-btn:hover {
+            background: #2f4a8a;
+            color: #fff;
+            transform: scale(1.08);
+            box-shadow: 0 6px 18px rgba(31, 42, 68, 0.22);
+        }
+
+        .blog .slideshow:fullscreen {
+            max-width: none;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #14161c;
+        }
+
+        .blog .slideshow:-webkit-full-screen {
+            max-width: none;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #14161c;
+        }
+
+        .blog .slideshow:fullscreen .slide-viewport,
+        .blog .slideshow:-webkit-full-screen .slide-viewport {
+            width: 94vw;
+            height: 82vh;
+            max-width: 94vw;
+            max-height: 82vh;
+            border: none;
+            background: transparent;
+        }
+
+        .blog .slideshow:fullscreen .slide-viewport img,
+        .blog .slideshow:-webkit-full-screen .slide-viewport img {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            max-height: none;
+            object-fit: contain;
+            margin: 0 auto;
+        }
+
+        .blog .slideshow:fullscreen .slide-controls,
+        .blog .slideshow:-webkit-full-screen .slide-controls {
+            margin-top: 1.4em;
+        }
+
+        .blog .slideshow:fullscreen .slide-counter,
+        .blog .slideshow:fullscreen .slide-controls,
+        .blog .slideshow:fullscreen .caption,
+        .blog .slideshow:-webkit-full-screen .slide-counter,
+        .blog .slideshow:-webkit-full-screen .slide-controls,
+        .blog .slideshow:-webkit-full-screen .caption {
+            color: #e7eaf2;
+        }
+
+        .blog .slideshow:fullscreen .slide-fullscreen-btn,
+        .blog .slideshow:-webkit-full-screen .slide-fullscreen-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+        }
+
+        .blog .caption {
+            margin-top: 0.7em;
+            font-size: 0.94rem;
+            color: #666;
+        }
+
+        .blog .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+            background: #2f4a8a;
+            color: #fff !important;
+            font-weight: 700;
+            text-decoration: none !important;
+            border: none !important;
+            padding: 0.65em 1.3em;
+            border-radius: 8px;
+            box-shadow: 0 6px 16px rgba(47, 74, 138, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+
+        .blog .download-btn:hover {
+            background: #1f2a44;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(31, 42, 68, 0.3);
+        }
+
+        .blog .download-btn i {
+            color: #fff;
+        }
+
+        .blog .meta-line {
+            font-size: 0.95rem;
+            color: #666;
+            margin: -0.4em 0 1.4em 0;
+        }
+
+        .blog .section-divider {
+            margin: 2.8em 0 1.2em 0;
+            border: 0;
+            border-top: 1px solid #ebedf2;
+        }
+
+        .blog .share-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55em;
+            align-items: center;
+            background: linear-gradient(180deg, #f7faff 0%, #eef4ff 100%);
+            border: 1px solid #dbe4f4;
+            border-left: 4px solid #5b78b8;
+            border-radius: 8px;
+            padding: 0.9em 1.1em;
+            margin: 1.1em 0 1.6em 0;
+        }
+
+        .blog .share-box .share-label {
+            font-weight: 700;
+            color: #2f3f64;
+            margin-right: 0.2em;
+        }
+
+        .blog .share-box a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.3em;
+            height: 2.3em;
+            border-radius: 50%;
+            border: 1px solid #d7dff0;
+            background: #fff;
+            color: #35508e;
+            text-decoration: none;
+            box-shadow: 0 2px 7px rgba(31, 42, 68, 0.06);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+        }
+
+        .blog .share-box a:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(31, 42, 68, 0.10);
+            color: #1f2a44;
+        }
+
+        .blog .share-box a i {
+            margin-right: 0;
+            font-size: 1rem;
+        }
+
+        .blog .share-box a.is-copy.copied {
+            color: #1f7a3f;
+            border-color: #b7e0c4;
+        }
+    </style>
+</head>
+
+<body class="landing">
+    <header id="header">
+        <h1><a href="/"><strong>Jafar</strong> Bakhshaliyev</a></h1>
+        <nav id="nav">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/#papers">Papers</a></li>
+                <li><a href="/#projects">Projects</a></li>
+                <li><a href="/blogs/" class="active">Blogs</a></li>
+                <li><a href="/books/">Books</a></li>
+                <li><a href="/#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="one" class="wrapper style1 special blogwrapper">
+        <div class="container">
+            <header class="major blogheader">
+                <h2>Local Learning Rules for Spiking Neural Networks</h2>
+            </header>
+
+            <div class="align-left blog">
+                <div class="blog-narrow">
+                    <p class="meta-line">
+                    </p>
+
+                    <div class="share-box">
+                        <span class="share-label">Share:</span>
+                        <a data-share="x" href="#" target="_blank" rel="noopener" aria-label="Share on X" title="X">
+                            <i class="fa-brands fa-x-twitter"></i>
+                        </a>
+                        <a data-share="linkedin" href="#" target="_blank" rel="noopener" aria-label="Share on LinkedIn" title="LinkedIn">
+                            <i class="fa-brands fa-linkedin-in"></i>
+                        </a>
+                        <a data-share="facebook" href="#" target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                        <a data-share="reddit" href="#" target="_blank" rel="noopener" aria-label="Share on Reddit" title="Reddit">
+                            <i class="fa-brands fa-reddit-alien"></i>
+                        </a>
+                        <a data-share="whatsapp" href="#" target="_blank" rel="noopener" aria-label="Share on WhatsApp" title="WhatsApp">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                        <a data-share="telegram" href="#" target="_blank" rel="noopener" aria-label="Share on Telegram" title="Telegram">
+                            <i class="fa-brands fa-telegram"></i>
+                        </a>
+                        <a data-share="email" href="#" aria-label="Share by email" title="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                        <a data-share="copy" class="is-copy" href="#" aria-label="Copy page link" title="Copy link">
+                            <i class="fas fa-link"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="slideshow" id="slideshow">
+                    <div class="slide-viewport">
+                        <img id="slideImg" src="/blogs/images/local_learning_slides/slide-01.png" alt="Slide 1 of 73" />
+                        <button class="slide-nav prev" id="prevSlide" aria-label="Previous slide" type="button">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button class="slide-nav next" id="nextSlide" aria-label="Next slide" type="button">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <button class="slide-fullscreen-btn" id="fullscreenBtn" aria-label="Enter fullscreen" type="button">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="slide-controls">
+                        <span class="slide-counter"><span id="slideCurrent">1</span> / <span id="slideTotal">73</span></span>
+                        <input type="range" id="slideSlider" min="1" max="73" value="1" step="1" aria-label="Jump to slide" />
+                    </div>
+                </div>
+
+                <p style="text-align: center; margin-top: 1.4em;">
+                    <a class="download-btn" href="/blogs/images/talk_local_learning.pdf" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-download"></i> Download the slides (PDF)
+                    </a>
+                </p>
+
+                <div class="blog-narrow">
+                    <hr class="section-divider" />
+
+                    <h3>Comments</h3>
+                    <div id="disqus_thread"></div>
+                    <script>
+                        var disqus_config = function () {
+                            this.page.url = window.location.origin + '/blogs/local-learning-rules-snn.html';
+                            this.page.identifier = 'local-learning-rules-snn';
+                        };
+                        (function () {
+                            var d = document;
+                            var s = d.createElement('script');
+                            s.src = 'https://https-jafarbakhshaliyev-github-io.disqus.com/embed.js';
+                            s.setAttribute('data-timestamp', +new Date());
+                            (d.head || d.body).appendChild(s);
+                        })();
+                    </script>
+                    <noscript>Please enable JavaScript to view comments powered by Disqus.</noscript>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <div class="container">
+            <ul class="icons">
+                <li><a href="mailto:jafar.bakhshaliyev@gmail.com" class="icon solid fa-envelope"><span
+                            class="label">Email</span></a></li>
+                <li><a href="https://www.linkedin.com/in/jafarbakhshaliyev/"
+                        class="icon brands fa-linkedin" target="_blank"><span
+                            class="label">LinkedIn</span></a></li>
+                <li><a href="https://scholar.google.com/citations?user=hOG05K8AAAAJ&hl=en"
+                        class="icon solid fa-graduation-cap" target="_blank"><span class="label">Google
+                            Scholar</span></a></li>
+                <li><a href="https://github.com/jafarbakhshaliyev"
+                        class="icon brands fa-github" target="_blank"><span
+                            class="label">GitHub</span></a></li>
+                <li><a href="https://twitter.com/JafarBakhshali1"
+                        class="icon brands fa-x-twitter" target="_blank"><span
+                            class="label">Twitter</span></a></li>
+            </ul>
+            <ul class="copyright">
+                <li>&copy; 2026 Jafar Bakhshaliyev</li>
+            </ul>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            function pageUrl() {
+                return window.location.href;
+            }
+            function pageTitle() {
+                return document.title;
+            }
+            function openPopup(url) {
+                window.open(url, '_blank', 'noopener,noreferrer,width=720,height=520');
+            }
+            document.querySelectorAll('[data-share]').forEach(function (el) {
+                el.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var type = el.getAttribute('data-share');
+                    var url = encodeURIComponent(pageUrl());
+                    var title = encodeURIComponent(pageTitle());
+                    if (type === 'x') {
+                        openPopup('https://twitter.com/intent/tweet?url=' + url + '&text=' + title);
+                    } else if (type === 'linkedin') {
+                        openPopup('https://www.linkedin.com/sharing/share-offsite/?url=' + url);
+                    } else if (type === 'facebook') {
+                        openPopup('https://www.facebook.com/sharer/sharer.php?u=' + url);
+                    } else if (type === 'reddit') {
+                        openPopup('https://www.reddit.com/submit?url=' + url + '&title=' + title);
+                    } else if (type === 'whatsapp') {
+                        openPopup('https://api.whatsapp.com/send?text=' + title + '%20' + url);
+                    } else if (type === 'telegram') {
+                        openPopup('https://t.me/share/url?url=' + url + '&text=' + title);
+                    } else if (type === 'email') {
+                        window.location.href = 'mailto:?subject=' + title + '&body=' + url;
+                    } else if (type === 'copy') {
+                        navigator.clipboard.writeText(pageUrl()).then(function () {
+                            el.classList.add('copied');
+                            setTimeout(function () { el.classList.remove('copied'); }, 1500);
+                        });
+                    }
+                });
+            });
+        })();
+    </script>
+
+    <script>
+        (function () {
+            var total = 73;
+            var current = 1;
+            var basePath = '/blogs/images/local_learning_slides/slide-';
+            var img = document.getElementById('slideImg');
+            var prevBtn = document.getElementById('prevSlide');
+            var nextBtn = document.getElementById('nextSlide');
+            var slider = document.getElementById('slideSlider');
+            var currentLabel = document.getElementById('slideCurrent');
+            var slideshow = document.getElementById('slideshow');
+            var fullscreenBtn = document.getElementById('fullscreenBtn');
+
+            if (!img) return;
+
+            function slideSrc(n) {
+                var num = n < 10 ? '0' + n : '' + n;
+                return basePath + num + '.png';
+            }
+
+            function preload(n) {
+                if (n < 1 || n > total) return;
+                var pre = new Image();
+                pre.src = slideSrc(n);
+            }
+
+            function render() {
+                img.classList.add('is-loading');
+                img.src = slideSrc(current);
+                img.alt = 'Slide ' + current + ' of ' + total;
+                currentLabel.textContent = current;
+                slider.value = current;
+                prevBtn.disabled = current <= 1;
+                nextBtn.disabled = current >= total;
+                preload(current + 1);
+                preload(current - 1);
+            }
+
+            img.addEventListener('load', function () {
+                img.classList.remove('is-loading');
+            });
+
+            function goTo(n) {
+                current = Math.min(total, Math.max(1, n));
+                render();
+            }
+
+            prevBtn.addEventListener('click', function () { goTo(current - 1); });
+            nextBtn.addEventListener('click', function () { goTo(current + 1); });
+            slider.addEventListener('input', function () { goTo(parseInt(slider.value, 10)); });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'ArrowRight') { goTo(current + 1); }
+                else if (e.key === 'ArrowLeft') { goTo(current - 1); }
+            });
+
+            var touchStartX = null;
+            slideshow.addEventListener('touchstart', function (e) {
+                touchStartX = e.changedTouches[0].clientX;
+            }, { passive: true });
+            slideshow.addEventListener('touchend', function (e) {
+                if (touchStartX === null) return;
+                var dx = e.changedTouches[0].clientX - touchStartX;
+                if (Math.abs(dx) > 40) {
+                    if (dx < 0) { goTo(current + 1); } else { goTo(current - 1); }
+                }
+                touchStartX = null;
+            });
+
+            function isSlideshowFullscreen() {
+                var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+                return fsEl === slideshow;
+            }
+
+            function updateFullscreenBtn() {
+                var active = isSlideshowFullscreen();
+                fullscreenBtn.innerHTML = '<i class="fa-solid fa-' + (active ? 'compress' : 'expand') + '"></i>';
+                fullscreenBtn.setAttribute('aria-label', active ? 'Exit fullscreen' : 'Enter fullscreen');
+            }
+
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function () {
+                    if (!isSlideshowFullscreen()) {
+                        var request = slideshow.requestFullscreen || slideshow.webkitRequestFullscreen;
+                        if (request) request.call(slideshow);
+                    } else {
+                        var exit = document.exitFullscreen || document.webkitExitFullscreen;
+                        if (exit) exit.call(document);
+                    }
+                });
+
+                document.addEventListener('fullscreenchange', updateFullscreenBtn);
+                document.addEventListener('webkitfullscreenchange', updateFullscreenBtn);
+
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'f' || e.key === 'F') {
+                        fullscreenBtn.click();
+                    }
+                });
+            }
+
+            render();
+        })();
+    </script>
+</body>
+</html>
